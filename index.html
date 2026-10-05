@@ -1283,7 +1283,7 @@
         let isResolved = false;
         const timer = setTimeout(function() {
           if (!isResolved) { isResolved = true; resolve(''); }
-        }, 5000);
+        }, 3000);
 
         try {
           liff.init({ liffId: LIFF_ID_KEY }).then(function() {
