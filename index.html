@@ -8,6 +8,10 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <!-- เพิ่มไลบรารี FullCalendar สำหรับปฏิทิน -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  <!-- เพิ่ม Animate.css สำหรับแอนิเมชันหน้าต่างเด้งสวยๆ -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
   <style>
     :root { --theme-primary: #0d9488; --theme-secondary: #059669; }
@@ -21,76 +25,127 @@
     @keyframes wifi-pulse { 0% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.5); } 70% { transform: scale(1); box-shadow: 0 0 0 22px rgba(13, 148, 136, 0); } 100% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(13, 148, 136, 0); } }
     .wifi-circle { animation: wifi-pulse 1.5s infinite; }
     
-    /* Animation สำหรับตัวหนังสือวิ่ง (Marquee) */
     .marquee-wrapper { width: 100%; overflow: hidden; white-space: nowrap; box-sizing: border-box; display: block; position: relative; }
     .marquee-text { display: inline-block; padding-left: 100%; animation: marquee 25s linear infinite; }
     .marquee-wrapper:hover .marquee-text { animation-play-state: paused; }
     @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
 
-    /* ==================================================== */
-    /* ส่วนปรับแต่งรูปแบบสำหรับการสั่งพิมพ์รายงาน (Print Layout) */
-    /* ==================================================== */
+    /* --- ตกแต่ง SweetAlert2 ให้สวยงามและทันสมัยเข้ากับ Tailwind --- */
+    div:where(.swal2-container) { font-family: 'Kanit', sans-serif; z-index: 9999 !important; }
+    div:where(.swal2-popup) {
+      border-radius: 1.5rem !important; /* มุมโค้ง 24px */
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+      border: 1px solid #f8fafc !important;
+      padding: 2rem 1.5rem !important;
+    }
+    h2:where(.swal2-title) { font-size: 1.25rem !important; color: #1e293b !important; padding-top: 0 !important; }
+    div:where(.swal2-html-container) { font-size: 0.9rem !important; color: #475569 !important; margin-top: 0.5rem !important; }
+    button:where(.swal2-confirm) {
+      background-color: var(--theme-primary) !important; color: white !important;
+      border-radius: 0.75rem !important; padding: 0.625rem 1.75rem !important;
+      font-weight: 500 !important; font-size: 0.9rem !important; transition: all 0.2s ease !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important; margin: 0 0.5rem !important;
+    }
+    button:where(.swal2-confirm):hover { filter: brightness(1.1); transform: translateY(-1px); }
+    button:where(.swal2-cancel) {
+      background-color: #f1f5f9 !important; color: #475569 !important;
+      border-radius: 0.75rem !important; padding: 0.625rem 1.75rem !important;
+      font-weight: 500 !important; font-size: 0.9rem !important; transition: all 0.2s ease !important; margin: 0 0.5rem !important;
+    }
+    button:where(.swal2-cancel):hover { background-color: #e2e8f0 !important; transform: translateY(-1px); }
+    input:where(.swal2-input) {
+      border-radius: 0.75rem !important; border: 1px solid #cbd5e1 !important;
+      padding: 0.75rem 1rem !important; font-size: 1rem !important; text-align: center; font-family: monospace;
+      box-shadow: none !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; margin-top: 1rem !important;
+    }
+    input:where(.swal2-input):focus { border-color: var(--theme-primary) !important; outline: none !important; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important; }
+    .swal2-loader { border-color: var(--theme-primary) transparent var(--theme-primary) transparent !important; }
+
     @media print { 
-      @page { margin: 12mm; } /* ระยะขอบกระดาษมาตรฐาน */
+      @page { margin: 12mm; }
       body { background-color: #ffffff !important; margin: 0 !important; padding: 0 !important; }
-      
-      /* แก้ปัญหาพื้นที่ขอบบนว่าง: ใช้ display:none แทน visibility:hidden เพื่อไม่ให้กล่องเก่ากินพื้นที่ */
       aside, footer, .no-print, #bgWatermarkLayer, #wifiScannerApp, #leaveFormApp { display: none !important; }
-      
-      /* รีเซ็ต Padding, Margin และจัดโครงสร้างครอบใหม่ให้ติดขอบ 100% */
       #adminDashboardApp, #adminDashboardApp > div, #mainContentArea, #tab-report { 
-        display: block !important; 
-        position: static !important; 
-        padding: 0 !important; 
-        margin: 0 !important; 
-        overflow: visible !important; 
-        height: auto !important; 
-        width: 100% !important;
+        display: block !important; position: static !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; height: auto !important; width: 100% !important;
       }
-      
-      #printableArea { 
-        display: block !important; 
-        width: 100% !important; 
-        box-shadow: none !important; 
-        border: none !important; 
-        padding: 0 !important; 
-        margin: 0 !important; 
-      } 
-      
-      /* บังคับกล่องข้อมูลให้กะทัดรัดขึ้น */
+      #printableArea { display: block !important; width: 100% !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; } 
       .print-emp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; padding: 10px 0 !important; margin-bottom: 12px !important; background-color: transparent !important; }
-      
-      /* บังคับกล่องสถิติให้เรียง 6 ช่องเสมอ (ไม่ตกบรรทัด) และลดพื้นที่ */
       .print-stat-grid { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; gap: 6px !important; margin-bottom: 12px !important; }
       .print-stat-grid > div { padding: 6px !important; background-color: transparent !important; border-color: #cbd5e1 !important; display: flex !important; flex-direction: column !important; justify-content: center !important; }
       .print-stat-grid .text-xl { font-size: 14px !important; line-height: 1.2 !important; }
       .print-stat-grid .text-xs { font-size: 10px !important; }
-      
-      /* ลดขนาดตัวอักษรและระยะห่างของตาราง */
       #printableArea table { font-size: 10.5px !important; border-collapse: collapse !important; width: 100% !important; }
       #printableArea th, #printableArea td { padding: 4px !important; border: 1px solid #cbd5e1 !important; color: #000 !important; }
       #printableArea th { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      
-      /* ปรับระยะพื้นที่ลายเซ็น */
       .print-sig-grid { margin-top: 16px !important; padding-top: 12px !important; font-size: 11px !important; border-top: 1px solid #e2e8f0; }
     }
 
-    /* ตกแต่ง Dropdown ในตารางกะ */
     .shift-select { appearance: none; text-align: center; font-weight: 600; color: #1e293b; background-color: transparent; width: 100%; height: 100%; min-width: 45px; padding: 8px 4px; cursor: pointer; outline: none; }
     .shift-select:hover { background-color: rgba(13, 148, 136, 0.05); }
     .shift-select:focus { background-color: #e0f2fe; color: #0284c7; }
-    /* ซ่อน Scrollbar สำหรับ Sidebar และพื้นที่หลัก */
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #94a3b8; }
+
+    .hover-lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+    .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
+    
+    /* ปรับแต่งปฏิทิน FullCalendar ให้เข้ากับตีม */
+    .fc-theme-standard .fc-scrollgrid { border: 1px solid #e2e8f0; border-radius: 1rem; overflow: hidden; }
+    .fc .fc-toolbar-title { font-size: 1.25rem !important; font-weight: 700; color: var(--theme-primary); }
+    .fc .fc-button-primary { background-color: var(--theme-primary) !important; border-color: var(--theme-primary) !important; text-transform: capitalize; border-radius: 0.75rem; padding: 0.4rem 1rem; transition: all 0.2s; }
+    .fc .fc-button-primary:hover { filter: brightness(1.1); transform: scale(1.05); }
+    .fc .fc-button-primary:not(:disabled):active, .fc .fc-button-primary:not(:disabled).fc-button-active { background-color: var(--theme-secondary) !important; border-color: var(--theme-secondary) !important; }
+    .fc .fc-col-header-cell-cushion { padding: 8px; color: #475569; font-weight: 600; text-decoration: none !important; }
+    .fc-daygrid-day-number { color: #64748b; font-weight: 500; font-size: 0.9rem; text-decoration: none !important; }
+    .fc-event { cursor: pointer; border-radius: 4px; padding: 1px 3px; border: none !important; transition: transform 0.2s; }
+    .fc-event:hover { transform: scale(1.02); }
+
+    /* --- Neumorphism (Soft UI) Styles --- */
+    .bg-neu { background-color: #e0e5ec; }
+    .neu-card {
+      background: #f1f5f9;
+      box-shadow: 9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.8);
+      border-radius: 1.5rem;
+      border: none;
+    }
+    .neu-pressed {
+      background: #f1f5f9;
+      box-shadow: inset 6px 6px 10px rgba(163, 177, 198, 0.6), inset -6px -6px 10px rgba(255, 255, 255, 0.8);
+      border-radius: 1rem;
+      border: none;
+    }
+    .neu-btn {
+      background: #f1f5f9;
+      box-shadow: 5px 5px 10px rgba(163, 177, 198, 0.6), -5px -5px 10px rgba(255, 255, 255, 0.8);
+      border-radius: 0.75rem;
+      transition: all 0.2s ease;
+    }
+    .neu-btn:active {
+      box-shadow: inset 4px 4px 8px rgba(163, 177, 198, 0.6), inset -4px -4px 8px rgba(255, 255, 255, 0.8);
+    }
+    
+    /* Trello Calendar Compact Styles */
+    .fc-theme-standard td, .fc-theme-standard th { border-color: transparent !important; }
+    .fc-scrollgrid { border: none !important; }
+    .fc .fc-daygrid-day.fc-day-today { background-color: rgba(13, 148, 136, 0.05) !important; border-radius: 10px; }
+    .fc-daygrid-event { border-radius: 8px !important; padding: 2px 4px; font-size: 0.7rem; border: none !important; margin-bottom: 3px !important; text-align: center; }
+    .fc .fc-toolbar-title { font-size: 1.1rem !important; font-weight: 700; color: #334155; }
+    .fc-header-toolbar { margin-bottom: 0.5rem !important; }
+    .fc-daygrid-day-frame { border: 1px solid rgba(163, 177, 198, 0.2); border-radius: 10px; margin: 2px; }
   </style>
+
+<!-- เพิ่มไลบรารี Chart.js สำหรับแสดงกราฟ -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 <body class="bg-slate-100 text-slate-800">
 
   <div id="bgWatermarkLayer" style="opacity: 0.08;"></div>
 
-  <!-- โหมดที่ 1: หน้าจอสแกนเช็ก Wi-Fi อัตโนมัติ (1-Click) -->
+  <!-- โหมด 1: หน้าจอสแกนเช็ก Wi-Fi อัตโนมัติ (1-Click) -->
   <div id="wifiScannerApp" class="hidden flex-1 flex flex-col justify-center items-center p-4 relative z-10 max-w-sm mx-auto w-full">
     <div class="w-full bg-white rounded-3xl shadow-xl border border-slate-100 p-6 text-center space-y-4">
       <div class="pt-1">
@@ -116,7 +171,7 @@
     </div>
   </div>
 
-  <!-- โหมดที่ 1.5: หน้าฟอร์มแจ้งลางาน / ไปราชการล่วงหน้า -->
+  <!-- โหมด 1.5: หน้าฟอร์มแจ้งลางาน / ไปราชการล่วงหน้า -->
   <div id="leaveFormApp" class="hidden flex-1 flex flex-col justify-center items-center p-4 relative z-10 max-w-md mx-auto w-full">
     <div class="w-full bg-white rounded-3xl shadow-xl border border-slate-100 p-6 space-y-4">
       <div class="flex items-center space-x-3 border-b pb-3">
@@ -156,10 +211,9 @@
     </div>
   </div>
 
-  <!-- โหมดที่ 2: หน้าเว็บแอปสำหรับแอดมิน (Admin Dashboard) -->
+  <!-- โหมด 2: หน้าเว็บแอปสำหรับแอดมิน (Admin Dashboard) -->
   <div id="adminDashboardApp" class="hidden fixed inset-0 w-full h-full flex flex-col lg:flex-row bg-slate-50/50 z-10 overflow-hidden">
     
-    <!-- ================= SIDEBAR ================= -->
     <aside class="w-full lg:w-64 h-auto lg:h-full bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col shrink-0 z-20 shadow-sm relative">
       <div class="p-5 border-b border-slate-100 flex items-center lg:flex-col lg:text-center gap-3 lg:gap-0 lg:space-y-3 theme-bg-gradient lg:bg-none text-white lg:text-slate-800">
         <img id="navLogo" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Logo" class="w-12 h-12 lg:w-16 lg:h-16 rounded-xl object-cover bg-white p-1 shadow-sm shrink-0">
@@ -171,6 +225,10 @@
 
       <div class="flex-1 overflow-x-auto lg:overflow-y-auto p-3 lg:p-4 flex lg:flex-col gap-2 custom-scrollbar">
         <span class="hidden lg:block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 px-2">เมนูหลัก</span>
+
+        <button onclick="switchTab('tab-dashboard')" id="btn-tab-dashboard" class="flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap lg:whitespace-normal bg-teal-50 text-teal-700 shadow-sm border border-teal-100">
+          <i class="fa-solid fa-chart-pie w-6 text-center"></i> <span class="ml-1">ภาพรวม (Dashboard)</span>
+        </button>
         
         <button onclick="switchTab('tab-report')" id="btn-tab-report" class="flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap lg:whitespace-normal text-slate-600 hover:bg-slate-50 hover:text-teal-600">
           <i class="fa-solid fa-print w-6 text-center"></i> <span class="ml-1">พิมพ์รายงาน</span>
@@ -197,6 +255,14 @@
             <i class="fa-solid fa-bolt w-6 text-center"></i> ทดสอบสแกน Wi-Fi
           </button>
         </div>
+
+        <!-- ปุ่มบังคับเชื่อมต่อโหลดข้อมูล -->
+        <div class="p-3 border-t border-slate-100 mt-2">
+          <button type="button" onclick="forceLoadAllData()" class="w-full flex items-center justify-center px-3 py-2.5 rounded-xl text-[11px] font-bold transition-all text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 shadow-sm">
+            <i class="fa-solid fa-arrows-rotate mr-2"></i> เชื่อมต่อ & ดึงข้อมูล
+          </button>
+        </div>
+
       </div>
 
       <div class="hidden lg:block p-4 border-t border-slate-100">
@@ -206,14 +272,130 @@
       </div>
     </aside>
 
-    <!-- ================= MAIN CONTENT AREA ================= -->
     <div class="flex-1 flex flex-col h-full min-w-0 relative z-10 bg-transparent overflow-hidden">
       
-      <!-- พื้นที่เลื่อนได้ของหน้าจอ -->
       <main id="mainContentArea" class="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-6 w-full">
+     
+      <!-- แท็บ: แดชบอร์ด (Neumorphism & Compact) -->
+        <div id="tab-dashboard" class="tab-pane space-y-6 w-full block animate__animated animate__fadeIn">
+          
+          <!-- แถวที่ 1: ส่วนหัวและสถิติ 5 กล่อง (ปรับเพิ่มวันทำงาน) -->
+          <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6 items-center">
+            <!-- กล่องยินดีต้อนรับ (กินพื้นที่ 2 คอลัมน์) -->
+            <div class="neu-card p-5 lg:col-span-2 flex flex-col justify-center h-full">
+              <h2 class="text-xl font-bold theme-text mb-1"><i class="fa-solid fa-house-user mr-2"></i> ภาพรวมการปฏิบัติงาน</h2>
+              <div class="neu-pressed px-4 py-2 mt-3 flex items-center justify-between">
+                <div id="realtimeDate" class="text-xs text-slate-500 font-medium">กำลังโหลด...</div>
+                <div id="realtimeClock" class="text-lg font-mono font-bold text-slate-700">00:00:00</div>
+              </div>
+            </div>
 
+            <div class="neu-card p-4 flex flex-col items-center justify-center text-center h-full hover:scale-105 transition">
+              <div class="w-10 h-10 rounded-full neu-pressed text-blue-500 flex items-center justify-center text-lg mb-2"><i class="fa-solid fa-users"></i></div>
+              <p class="text-[14px] text-slate-400 font-bold">พนักงานทั้งหมด</p>
+              <h3 id="dash-total" class="text-xl font-bold text-slate-700 mt-1">0</h3>
+            </div>
+            <!-- กล่องที่เพิ่มใหม่: วันทำงานเดือนนี้ -->
+            <div class="neu-card p-4 flex flex-col items-center justify-center text-center h-full hover:scale-105 transition">
+              <div class="w-10 h-10 rounded-full neu-pressed text-purple-500 flex items-center justify-center text-lg mb-2"><i class="fa-solid fa-calendar-check"></i></div>
+              <p class="text-[14px] text-slate-400 font-bold">วันทำงานเดือนนี้</p>
+              <h3 id="dash-workdays" class="text-xl font-bold text-slate-700 mt-1">0</h3>
+            </div>
+            <div class="neu-card p-4 flex flex-col items-center justify-center text-center h-full hover:scale-105 transition">
+              <div class="w-10 h-10 rounded-full neu-pressed text-emerald-500 flex items-center justify-center text-lg mb-2"><i class="fa-solid fa-user-check"></i></div>
+              <p class="text-[14px] text-slate-400 font-bold">มาทำงานวันนี้</p>
+              <h3 id="dash-present" class="text-xl font-bold text-slate-700 mt-1">0</h3>
+            </div>
+            <div class="neu-card p-4 flex flex-col items-center justify-center text-center h-full hover:scale-105 transition">
+              <div class="w-10 h-10 rounded-full neu-pressed text-amber-500 flex items-center justify-center text-lg mb-2"><i class="fa-solid fa-plane-departure"></i></div>
+              <p class="text-[14px] text-slate-400 font-bold">ลา / ราชการ</p>
+              <h3 id="dash-leave" class="text-xl font-bold text-slate-700 mt-1">0</h3>
+            </div>
+          </div>
+
+          <!-- แถวที่ 2: กราฟโดนัท (มิติ), รายชื่อ, ปฏิทิน Trello -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[360px]">
+            
+            <!-- กราฟโดนัท 3D สลับข้อความตรงกลาง -->
+            <div class="neu-card p-5 lg:col-span-3 flex flex-col items-center relative">
+              <h3 class="text-sm font-bold text-slate-600 mb-2 w-full text-center">สัดส่วนวันนี้</h3>
+              <!-- วงกลมตรงกลางกราฟสำหรับเอฟเฟกต์ 3D -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-8">
+                <div class="w-28 h-28 rounded-full neu-pressed flex flex-col items-center justify-center transition-opacity duration-300" id="donutTextContainer">
+                  <span class="transition-opacity duration-300" id="donutCenterLabel">กำลังโหลด</span>
+                  <span class="text-5xl font-bold text-slate-700 transition-opacity duration-300" id="donutCenterValue">0</span>
+                </div>
+              </div>
+              <div class="relative w-full flex-1 min-h-[200px] z-10"><canvas id="todayPieChart"></canvas></div>
+            </div>
+            
+            <!-- รายชื่อพนักงาน (Neu Pressed Scroll) -->
+            <div class="neu-card p-5 lg:col-span-4 flex flex-col">
+              <div class="flex justify-between items-center mb-3">
+                <h3 class="text-sm font-bold text-slate-600">สถานะบุคลากร</h3>
+                <span id="todayBadgeLabel" class="text-[10px] neu-pressed px-2 py-1 text-slate-500">อัปเดตล่าสุด</span>
+              </div>
+              <div class="neu-pressed flex-1 rounded-xl p-3 overflow-y-auto custom-scrollbar space-y-2 h-[260px]" id="todayEmployeeList">
+                <!-- ข้อมูลถูกแทรกที่นี่ -->
+              </div>
+            </div>
+
+            <!-- ปฏิทินแบบ Compact (Trello Style) -->
+            <div class="neu-card p-5 lg:col-span-5 flex flex-col overflow-hidden">
+              <div class="flex justify-between items-center mb-1 z-10">
+                <h3 class="text-sm font-bold text-slate-600">ปฏิทินปฏิบัติงาน</h3>
+                <button onclick="loadDashboardData()" class="text-[10px] neu-btn px-3 py-1.5 text-slate-600 font-bold"><i class="fa-solid fa-rotate mr-1"></i> รีเฟรช</button>
+              </div>
+              <div id="attendanceCalendar" class="w-full flex-1 text-[11px] neu-pressed p-2 rounded-xl"></div>
+            </div>
+
+          </div>
+
+          <!-- แถวที่ 3: สถิติการปฏิบัติงานรายบุคคล (รายเดือน) -->
+          <div class="neu-card p-6 flex flex-col w-full animate__animated animate__fadeInUp">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-3">
+              <h3 class="text-base font-bold text-slate-700 flex items-center shrink-0">
+                <div class="w-8 h-8 rounded-full neu-pressed text-purple-500 flex items-center justify-center mr-3"><i class="fa-solid fa-user-clock"></i></div>
+                สรุปเวลาเข้า-ออกรายเดือน
+              </h3>
+              <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                <input type="month" id="dash-month-select" onchange="fetchMonthlyChartData()" class="neu-pressed px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 outline-none w-full md:w-40 cursor-pointer focus:ring-2 focus:ring-purple-400/50 transition">
+                <select id="dash-emp-select" onchange="updateIndividualStats()" class="neu-pressed px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 outline-none w-full md:w-64 cursor-pointer focus:ring-2 focus:ring-purple-400/50 transition">
+                  <option value="all">-- 📊 ภาพรวมชั่วโมงทำงาน --</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- กล่องตัวเลขสรุปรายบุคคล -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div class="neu-pressed p-3 flex items-center justify-between rounded-xl border border-white/40">
+                <span class="text-xs font-bold text-slate-500"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> เข้างานปกติ</span>
+                <span id="ind-present" class="text-xl font-bold text-emerald-600">0</span>
+              </div>
+              <div class="neu-pressed p-3 flex items-center justify-between rounded-xl border border-white/40">
+                <span class="text-xs font-bold text-slate-500"><i class="fa-solid fa-clock text-amber-500 mr-1"></i> มาสาย</span>
+                <span id="ind-late" class="text-xl font-bold text-amber-600">0</span>
+              </div>
+              <div class="neu-pressed p-3 flex items-center justify-between rounded-xl border border-white/40">
+                <span class="text-xs font-bold text-slate-500"><i class="fa-solid fa-plane text-blue-500 mr-1"></i> ลางาน</span>
+                <span id="ind-leave" class="text-xl font-bold text-blue-600">0</span>
+              </div>
+              <div class="neu-pressed p-3 flex items-center justify-between rounded-xl border border-white/40">
+                <span class="text-xs font-bold text-slate-500"><i class="fa-solid fa-circle-xmark text-rose-500 mr-1"></i> ขาด/ไม่ลงเวลา</span>
+                <span id="ind-absent" class="text-xl font-bold text-rose-600">0</span>
+              </div>
+            </div>
+
+            <!-- กราฟรายบุคคล -->
+            <div class="relative w-full h-64 md:h-72">
+              <canvas id="individualChart"></canvas>
+            </div>
+          </div>
+
+        </div>
         <!-- แท็บ: พิมพ์รายงาน -->
         <div id="tab-report" class="tab-pane space-y-6 hidden w-full">
+          <!-- ...เนื้อหา tab-report เดิม... -->
           <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200 p-6 no-print">
             <h2 class="text-lg font-semibold theme-text border-b pb-3 mb-4 flex items-center"><i class="fa-solid fa-filter mr-2"></i> เลือกเงื่อนไขการออกรายงาน</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
@@ -234,7 +416,6 @@
             </div>
           </div>
           
-          <!-- PRINTABLE AREA (แก้ไขระยะเวลาพิมพ์ให้กระชับขึ้น) -->
           <div id="printableArea" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
             <div class="flex items-center justify-center gap-4 border-b pb-4 mb-6">
               <img id="reportLogo" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="w-14 h-14 object-contain">
@@ -336,18 +517,12 @@
           </div>
         </div>
 
-        <!-- ========================================================= -->
-        <!-- แท็บที่ 2.5 (ใหม่ Phase 2): หน้าจัดตารางกะการทำงาน (Shift Schedule) -->
-        <!-- ========================================================= -->
+        <!-- แท็บที่ 2.5: หน้าจัดตารางกะการทำงาน (Shift Schedule) -->
         <div id="tab-shift" class="tab-pane hidden flex-col h-full space-y-6 w-full">
-          <!-- กล่องแนะนำรหัสกะ -->
           <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 shadow-sm shrink-0">
             <h3 class="text-sm font-bold text-blue-900 mb-2 flex items-center"><i class="fa-solid fa-circle-info mr-2"></i> คู่มือการจัดตารางกะ (เฉพาะพนักงานกลุ่ม "รายวัน (เข้ากะ)")</h3>
             <div id="shiftLegendBox" class="flex flex-wrap gap-2 text-xs font-medium">
               <span class="px-2.5 py-1 bg-white border rounded text-slate-600 shadow-sm"><span class="text-rose-500 font-bold">OFF</span> = วันหยุด / ไม่มีกะ</span>
-              <span class="px-2.5 py-1 bg-white border rounded text-slate-600 shadow-sm"><span class="text-teal-600 font-bold">M</span> = กะเช้า (08:00 - 16:00)</span>
-              <span class="px-2.5 py-1 bg-white border rounded text-slate-600 shadow-sm"><span class="text-orange-500 font-bold">A</span> = กะบ่าย (16:00 - 00:00)</span>
-              <span class="px-2.5 py-1 bg-white border rounded text-slate-600 shadow-sm"><span class="text-indigo-500 font-bold">N</span> = กะดึก (00:00 - 08:00)</span>
             </div>
             <p class="text-[11px] text-blue-700 mt-2">* หากต้องการแก้ไขเวลาเข้า-ออก หรือเพิ่มกะใหม่ สามารถไปตั้งค่าได้ที่เมนู <b>"ตั้งค่าระบบ"</b></p>
           </div>
@@ -363,21 +538,17 @@
                   <label class="block text-xs font-semibold text-slate-700 mb-1">เลือกเดือน/ปี ที่ต้องการ</label>
                   <input type="month" id="shiftMonthPicker" onchange="loadShiftGrid()" class="px-3 py-2 border border-slate-300 rounded-xl text-sm font-mono focus:outline-none theme-border cursor-pointer bg-slate-50">
                 </div>
-                <!-- ปุ่มพิมพ์ตารางกะ -->
                 <button onclick="printShiftTable()" class="bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 mt-5 rounded-xl shadow transition text-sm font-medium flex items-center"><i class="fa-solid fa-print mr-1.5"></i> พิมพ์ตาราง</button>
                 <button onclick="loadShiftGrid()" class="theme-btn px-4 py-2 mt-5 rounded-xl shadow transition text-sm font-medium flex items-center"><i class="fa-solid fa-cloud-arrow-down mr-1.5"></i> โหลดตาราง</button>
               </div>
             </div>
 
-            <!-- ตาราง Matrix กะ -->
             <div id="shiftGridContainer" class="overflow-x-auto border border-slate-200 rounded-xl shadow-inner relative flex-1 custom-scrollbar">
               <table class="w-full text-xs text-center border-collapse">
                 <thead id="shiftGridHead" class="bg-slate-100 border-b sticky top-0 z-20 shadow-sm">
-                  <!-- หัวตาราง วันที่ 1-31 จะถูกสร้างด้วย JS -->
                   <tr><th class="py-4 text-slate-500 font-normal">กรุณาเลือกเดือน และกดปุ่ม 'โหลดตาราง'</th></tr>
                 </thead>
                 <tbody id="shiftGridBody" class="divide-y divide-slate-200 bg-white">
-                  <!-- แถวพนักงานและ Dropdown กะ จะถูกสร้างด้วย JS -->
                 </tbody>
               </table>
             </div>
@@ -448,7 +619,6 @@
             </div>
           </div>
 
-          <!-- ตั้งค่ารหัสกะ (Shift Master) เพิ่มใหม่ -->
           <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200 p-6">
             <h2 class="text-lg font-semibold theme-text border-b pb-3 mb-4 flex items-center"><i class="fa-solid fa-layer-group mr-2 text-indigo-600"></i> ตั้งค่ารหัสกะการทำงาน (Shift Master)</h2>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -621,7 +791,7 @@
 
       </main>
 
-      <!-- Footer ย้ายมาไว้ด้านนอกเพื่อให้ติดด้านล่างสุดเสมอ -->
+      <!-- Footer -->
       <footer class="theme-bg-gradient text-white py-2 shadow-inner shrink-0 z-20 relative no-print border-t border-white/10">
         <div class="w-full px-4">
           <div class="marquee-wrapper text-xs md:text-sm font-medium tracking-wide">
@@ -634,10 +804,106 @@
   </div>
 
   <script>
-    const SERVER_INITIAL_MODE = "<?= initialMode ?>";
-    const SERVER_INITIAL_UID = "<?= initialUid ?>";
-    const SERVER_ENABLE_IP = "<?= serverEnableIp ?>" === "true";
+    const urlParams = new URLSearchParams(window.location.search);
+    const SERVER_INITIAL_MODE = urlParams.get('mode') || "";
+    const SERVER_INITIAL_UID = urlParams.get('uid') || "";
+    let SERVER_ENABLE_IP = true; 
     const LIFF_ID_KEY = "2011741924-mrgyprmh";
+
+    // 🔴 1. วาง Web App URL ล่าสุดของคุณลงในช่องนี้ 🔴
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyMtf2Cnx9omJeey45BkpX4-HdsjUdM7baxdhixo6U2g0OchsuAG2AqDB2EQnu1QZF5/exec";
+
+    // 🔴 2. ฟิกซ์แก้ไขปัญหาเชื่อมต่อ (Proxy แบบใหม่ แยกสายส่งข้อมูล) 🔴
+    window.google = {
+      script: {
+        run: (function() {
+          function createRunner(onSuccess, onFailure) {
+            return new Proxy({}, {
+              get: function(target, prop) {
+                if (prop === 'withSuccessHandler') {
+                  return function(fn) { return createRunner(fn, onFailure); };
+                }
+                if (prop === 'withFailureHandler') {
+                  return function(fn) { return createRunner(onSuccess, fn); };
+                }
+                return function(...args) {
+                  const payloadString = JSON.stringify({ action: prop, args: args });
+                  fetch(GAS_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: payloadString
+                  })
+                  .then(res => res.json())
+                  .then(data => {
+                    if (data.error) {
+                      if (onFailure) onFailure(new Error(data.error));
+                      else console.error("API Error:", data.error);
+                    } else {
+                      if (onSuccess) onSuccess(data.result);
+                    }
+                  }).catch(err => {
+                    if (onFailure) onFailure(err);
+                    console.error("Fetch Error:", err);
+                  });
+                };
+              }
+            });
+          }
+          return createRunner(null, null);
+        })()
+      }
+    };
+
+    // 🔴 3. ฟังก์ชันปรับแต่ง SweetAlert2 ให้สวยงามและเรียกใช้แบบสั้นๆ 🔴
+    const ModernSwal = Swal.mixin({
+      buttonsStyling: false,
+      showClass: { popup: 'animate__animated animate__zoomIn animate__faster' },
+      hideClass: { popup: 'animate__animated animate__zoomOut animate__faster' }
+    });
+    window.Swal = ModernSwal; // นำไปครอบทับ Swal เดิม
+
+    // ฟังก์ชันสร้างหน้าต่าง Loading ให้เล็กและสวยงาม
+    function uiShowLoading(titleText) {
+      Swal.fire({
+        title: titleText,
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        customClass: { 
+          popup: '!w-72 !p-6 !pt-8', 
+          title: '!text-base !mt-5 !text-slate-700' 
+        },
+        didOpen: function() { Swal.showLoading(); }
+      });
+    }
+
+    // 🔴 4. ฟังก์ชันบังคับโหลดข้อมูลทั้งหมด (ใช้กับปุ่มที่เพิ่มใหม่) 🔴
+    function forceLoadAllData() {
+      uiShowLoading('กำลังเชื่อมต่อฐานข้อมูล...');
+      google.script.run
+        .withSuccessHandler(function(s) {
+          Swal.close();
+          if(s) applySettingsToUI(s);
+          loadEmployees();
+          loadHolidays();
+          loadShiftMasterSettings();
+          Swal.fire({
+            icon: 'success', 
+            title: 'เชื่อมต่อสำเร็จ!', 
+            text: 'ดึงข้อมูลล่าสุดจากระบบเรียบร้อยแล้ว', 
+            timer: 1500, 
+            showConfirmButton: false
+          });
+        })
+        .withFailureHandler(function(err) {
+          Swal.close();
+          Swal.fire({
+            icon: 'error', 
+            title: 'การเชื่อมต่อล้มเหลว', 
+            html: 'โปรดตรวจสอบสิทธิ์การเข้าถึง (Deploy)<br><br><span class="text-xs text-rose-500 font-mono text-left block mt-2 p-2 bg-rose-50 rounded">สาเหตุ: ' + err.message + '</span>'
+          });
+        })
+        .getAppSettings(); 
+    }
 
     const THEME_PALETTES = {
       teal:   { primary: '#0d9488', secondary: '#059669' },
@@ -691,7 +957,8 @@
           document.getElementById('adminCurrentIpBadge').innerText = ip || 'ไม่พบค่า';
         });
         
-        switchTab('tab-report');
+        switchTab('tab-dashboard');
+        loadDashboardData(); // โหลดข้อมูลแดชบอร์ดทันที
       }
     };
 
@@ -719,19 +986,15 @@
       }
     }
 
-    // ==========================================
-    // ส่วนโหลดและบันทึกตารางกะการทำงาน (Shift Matrix)
-    // ==========================================
     function loadShiftGrid() {
       const ym = document.getElementById('shiftMonthPicker').value;
       if (!ym) return;
-      Swal.fire({ title: 'กำลังโหลดตารางกะ...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+      uiShowLoading('กำลังโหลดตารางกะ...');
       google.script.run.withSuccessHandler(function(res) {
         Swal.close();
         currentShiftData = res;
         renderShiftGrid(ym, res);
         
-        // อัปเดตกล่องตัวอย่างรหัสกะให้ตรงกับที่ตั้งค่าไว้ใน Google Sheets
         let legendHtml = '<span class="px-2.5 py-1 bg-white border border-rose-200 rounded text-slate-600 shadow-sm"><span class="text-rose-500 font-bold">OFF</span> = วันหยุด/ไม่มีกะ</span>';
         res.shifts.forEach(function(s) {
           legendHtml += '<span class="px-2.5 py-1 bg-white border border-teal-200 rounded text-slate-600 shadow-sm"><span class="text-teal-600 font-bold">' + s.code + '</span> = ' + s.name + ' (' + s.in + '-' + s.out + ')</span>';
@@ -748,7 +1011,6 @@
       const daysInMonth = new Date(y, m, 0).getDate();
       const thaiDays = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
       
-      // สร้างหัวตาราง (วันที่ 1 - 31 พร้อมชื่อวัน)
       let thead = '<tr><th class="py-3 px-2 sticky left-0 bg-slate-200 w-48 z-10 font-bold text-slate-700 shadow-[1px_0_0_0_#cbd5e1] align-middle">รายชื่อพนักงานเข้ากะ</th>';
       for (let i = 1; i <= 31; i++) {
         if (i > daysInMonth) {
@@ -791,13 +1053,11 @@
               
               let val = emp.schedule[i - 1] || 'OFF';
               
-              // สร้าง Dropdown รหัสกะ
               let cellOpts = '<option value="OFF" ' + (val === 'OFF' ? 'selected' : '') + ' class="text-rose-600 font-bold">OFF</option>';
               data.shifts.forEach(function(s) {
                 cellOpts += '<option value="' + s.code + '" ' + (val === s.code ? 'selected' : '') + ' class="text-teal-700 font-bold">' + s.code + '</option>';
               });
               
-              // ใส่คลาสเปลี่ยนสีช่องหากเป็นวันหยุด
               let selectClass = val === 'OFF' ? 'text-rose-500' : 'text-teal-700';
 
               tbody += '<td class="p-0 border-l border-b border-slate-200 ' + tdBg + '">' +
@@ -831,26 +1091,21 @@
         return { idCard: emp.idCard, schedule: sched };
       });
 
-      Swal.fire({ title: 'กำลังบันทึกตารางกะ...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+      uiShowLoading('กำลังบันทึกตารางกะ...');
       google.script.run.withSuccessHandler(function(res) {
-        Swal.fire('สำเร็จ!', res.message, 'success');
+        Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: res.message });
       }).withFailureHandler(function(err) {
-        Swal.fire('ข้อผิดพลาด', err.message, 'error');
+        Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: err.message });
       }).saveShiftSchedule(ym, payload);
     }
     
-    // ==========================================
-    // ฟังก์ชันพิมพ์ตารางกะ (Print Shift Table)
-    // ==========================================
     function printShiftTable() {
       const ym = document.getElementById('shiftMonthPicker').value;
       if (!ym || !currentShiftData || currentShiftData.employees.length === 0) {
-        Swal.fire('แจ้งเตือน', 'กรุณาโหลดตารางกะขึ้นมาก่อนทำการพิมพ์ครับ', 'warning'); return;
+        Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณาโหลดตารางกะขึ้นมาก่อนทำการพิมพ์ครับ' }); return;
       }
       
       const originalPrintArea = document.getElementById('printableArea').innerHTML;
-      
-      // ดึงเฉพาะ Table ล้วนๆ ไม่เอากรอบที่ครอบมันอยู่
       const printContent = document.getElementById('shiftGridContainer').querySelector('table').outerHTML;
       
       const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
@@ -874,62 +1129,33 @@
       style.id = 'tempPrintStyle';
       style.innerHTML = `
         @media print {
-          @page { size: A4 landscape; margin: 10mm 5mm; } /* บังคับ A4 แนวนอน และชิดขอบให้มากที่สุด */
+          @page { size: A4 landscape; margin: 10mm 5mm; } 
           #printableArea { padding: 0 !important; }
-          #printShiftTableContainer table { 
-            width: 100%; border-collapse: collapse; font-size: 11px; 
-          }
-          #printShiftTableContainer th, #printShiftTableContainer td { 
-            border: 1px solid #94a3b8 !important; 
-            padding: 4px 2px !important; 
-            text-align: center;
-            vertical-align: middle;
-          }
-          /* คอลัมน์ชื่อพนักงานให้ชิดซ้ายและมีความกว้างเหมาะสม */
-          #printShiftTableContainer td:first-child, 
-          #printShiftTableContainer th:first-child {
-            text-align: left;
-            padding-left: 8px !important;
-            width: 150px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-          /* ลบรูปแบบ Dropdown ออกให้กลายเป็นข้อความธรรมดาตอนพิมพ์ */
-          #printShiftTableContainer select { 
-            appearance: none; -webkit-appearance: none; -moz-appearance: none;
-            background: transparent; border: none; color: #1e293b !important; 
-            font-weight: bold; width: 100%; font-size: 11px; text-align: center;
-            padding: 0; margin: 0;
-          }
-          /* เพิ่มแถบสีสลับบรรทัดให้อ่านง่าย */
+          #printShiftTableContainer table { width: 100%; border-collapse: collapse; font-size: 11px; }
+          #printShiftTableContainer th, #printShiftTableContainer td { border: 1px solid #94a3b8 !important; padding: 4px 2px !important; text-align: center; vertical-align: middle; }
+          #printShiftTableContainer td:first-child, #printShiftTableContainer th:first-child { text-align: left; padding-left: 8px !important; width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          #printShiftTableContainer select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background: transparent; border: none; color: #1e293b !important; font-weight: bold; width: 100%; font-size: 11px; text-align: center; padding: 0; margin: 0; }
           #printShiftTableContainer tbody tr:nth-child(even) { background-color: #f8fafc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           #printShiftTableContainer th { background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          
-          /* ลดขนาดชื่อวันในสัปดาห์ตอนพิมพ์ */
           #printShiftTableContainer th div.text-\\[10px\\] { font-size: 8px !important; }
         }
       `;
       document.head.appendChild(style);
       
-      // ดึง ID ของ Tab ที่กำลังแสดงอยู่เพื่อจำค่า
       let currentTabId = 'tab-report';
       document.querySelectorAll('.tab-pane').forEach(el => {
         if(el.style.display !== 'none') currentTabId = el.id;
       });
 
-      // สลับไปหน้าจอ Print Area ชั่วคราว
       activateTabUI('tab-report'); 
       
       setTimeout(() => {
         window.print();
-        // นำของเดิมกลับมา
         document.getElementById('printableArea').innerHTML = originalPrintArea;
         document.getElementById('tempPrintStyle').remove();
         activateTabUI(currentTabId);
       }, 500);
     }
-    // ==========================================
 
     async function openLeaveFormMode() {
       document.getElementById('adminDashboardApp').classList.add('hidden');
@@ -938,7 +1164,6 @@
 
       selectLeaveCategory('ไปราชการ/อบรม');
 
-      // ตรวจสอบว่าเปิดผ่าน LINE LIFF หรือไม่
       if (!liff.isInClient()) {
          document.getElementById('leaveErrorBox').classList.remove('hidden');
          return;
@@ -953,7 +1178,6 @@
         return;
       }
 
-      // ส่ง currentLineUid ไปหาพนักงาน โดยไม่ต้องสน ID Card
       google.script.run.withSuccessHandler(function(info) {
         if (info && info.found) {
           currentSavedIdCard = info.idCard;
@@ -1021,35 +1245,35 @@
     function handleSubmitLeaveRange(e) {
       e.preventDefault();
       if (!currentLineUid) {
-        Swal.fire('แจ้งเตือน', 'กรุณาทำรายการผ่าน LINE และตรวจสอบการเชื่อมต่อ', 'warning');
+        Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณาทำรายการผ่าน LINE และตรวจสอบการเชื่อมต่อ' });
         return;
       }
       
       const payload = {
         userId: currentLineUid,
-        idCard: currentSavedIdCard || '', // Backend จะหาจาก userId เป็นหลัก
+        idCard: currentSavedIdCard || '',
         leaveCategory: document.getElementById('selectedLeaveCategory').value,
         startDateIso: document.getElementById('leaveStartDate').value,
         endDateIso: document.getElementById('leaveEndDate').value,
         customNote: document.getElementById('leaveCustomNote').value.trim()
       };
-      Swal.fire({ title: 'กำลังบันทึกข้อมูล...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+      uiShowLoading('กำลังบันทึกข้อมูล...');
       google.script.run
         .withSuccessHandler(function(res) {
           Swal.close();
           if (res && res.needRegister) {
-            Swal.fire('ยังไม่ได้ผูกบัญชี', 'กรุณากลับไปพิมพ์เลขบัตร 13 หลักในช่องแชต LINE ครับ', 'warning');
+            Swal.fire({ icon: 'warning', title: 'ยังไม่ได้ผูกบัญชี', text: 'กรุณากลับไปพิมพ์เลขบัตร 13 หลักในช่องแชต LINE ครับ' });
             return;
           }
           if (res && res.success) {
             Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', text: res.message, timer: 1800, showConfirmButton: false }).then(function() { closeScannerWindow(); });
           } else {
-            Swal.fire('ไม่สามารถบันทึกได้', res ? res.message : 'เกิดข้อผิดพลาด', 'warning');
+            Swal.fire({ icon: 'warning', title: 'ไม่สามารถบันทึกได้', text: res ? res.message : 'เกิดข้อผิดพลาด' });
           }
         })
         .withFailureHandler(function(err) {
           Swal.close();
-          Swal.fire('ข้อผิดพลาด', err.message, 'error');
+          Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: err.message });
         })
         .submitLeaveRangeRequest(payload);
     }
@@ -1057,10 +1281,9 @@
     function tryGetLiffUserIdFast() {
       return new Promise(function(resolve) {
         let isResolved = false;
-        // ปรับเป็น 6 วิ เพื่อรอ iPhone โหลด LIFF
         const timer = setTimeout(function() {
           if (!isResolved) { isResolved = true; resolve(''); }
-        }, 6000); 
+        }, 10000);
 
         try {
           liff.init({ liffId: LIFF_ID_KEY }).then(function() {
@@ -1108,7 +1331,6 @@
       document.getElementById('wifiRetryBox').classList.add('hidden');
       updateWifiVisual('scanning', 'กำลังดึงข้อมูล LINE...', 'รอสักครู่...');
 
-      // 1. Get LINE UID FIRST (สำคัญที่สุดสำหรับระบบใหม่)
       let uid = await tryGetLiffUserIdFast();
       if (uid) {
          currentLineUid = uid;
@@ -1121,7 +1343,6 @@
         return;
       }
 
-      // 2. Get IP
       updateWifiVisual('scanning', 'ตรวจสอบ Wi-Fi...', 'กำลังเช็กเครือข่าย');
       detectedPublicIp = await fetchClientPublicIp();
       document.getElementById('clientIpText').innerText = detectedPublicIp || 'ไม่พบ IP';
@@ -1132,14 +1353,12 @@
         return;
       }
 
-      // 3. Execute
       executeIpClockInOut('');
     }
 
     function executeIpClockInOut(earlyReasonText) {
       google.script.run.withSuccessHandler(function(res) {
         
-        // ถ้าระบบหา UID ไม่เจอในฐานข้อมูล จะแจ้งให้ไปพิมพ์เลขบัตรในแชต
         if (!res.success && res.needRegister) {
           updateWifiVisual('warning', 'ยังไม่ได้ผูกบัญชี', 'กรุณากลับไปพิมพ์เลขบัตร 13 หลักในช่องแชต LINE');
           return;
@@ -1161,7 +1380,7 @@
               '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'พบแพทย์/ป่วย\'" class="p-2 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-lg border border-teal-200 font-medium">พบแพทย์/ป่วย</button>' +
               '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'มีธุระจำเป็นเร่งด่วน\'" class="p-2 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-lg border border-teal-200 font-medium">ธุระด่วน</button>' +
             '</div>' +
-            '<input id="swal-early-input" class="swal2-input !m-0 !w-full !text-sm" placeholder="หรือพิมพ์ระบุเหตุผลอื่นๆ ที่นี่...">';
+            '<input id="swal-early-input" class="swal2-input" placeholder="หรือพิมพ์ระบุเหตุผลอื่นๆ ที่นี่...">';
 
           Swal.fire({
             title: 'ออกงานก่อนเวลา',
@@ -1169,7 +1388,6 @@
             showCancelButton: true,
             confirmButtonText: 'ยืนยันบันทึก',
             cancelButtonText: 'ยกเลิก',
-            confirmButtonColor: '#e11d48',
             allowOutsideClick: false,
             preConfirm: function() {
               const val = document.getElementById('swal-early-input').value;
@@ -1198,7 +1416,7 @@
         }
       }).submitIpClockInOut({
         userId: currentLineUid,
-        idCard: currentSavedIdCard || '', // Backend จะหาจาก userId เป็นหลัก
+        idCard: currentSavedIdCard || '',
         clientIp: detectedPublicIp,
         earlyReason: earlyReasonText
       });
@@ -1244,7 +1462,7 @@
     }
 
     async function fillAdminCurrentPublicIp() {
-      Swal.fire({ title: 'กำลังดึง IP...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+      uiShowLoading('กำลังดึง IP...');
       const ip = await fetchClientPublicIp();
       Swal.close();
       if (ip) {
@@ -1253,28 +1471,20 @@
         const currentVal = inputEl.value.trim();
         if (!currentVal) inputEl.value = ip;
         else if (!currentVal.includes(ip)) inputEl.value = currentVal + ', ' + ip;
-        Swal.fire('สำเร็จ', 'ดึง IP สำเร็จ: ' + ip, 'success');
-      } else { Swal.fire('ผิดพลาด', 'ไม่สามารถดึง IP ได้', 'error'); }
+        Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'ดึง IP สำเร็จ: ' + ip });
+      } else { Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'ไม่สามารถดึง IP ได้' }); }
     }
 
     function switchTab(tabId) {
       const protectedTabs = ['tab-employees', 'tab-botqr', 'tab-settings', 'tab-shift'];
       if (protectedTabs.includes(tabId) && !isAdminUnlocked) {
         Swal.fire({
-          title: '<i class="fa-solid fa-lock text-amber-500 mr-2"></i>ยืนยันสิทธิ์ผู้ดูแลระบบ',
+          title: '<div class="flex flex-col items-center"><div class="w-16 h-16 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center text-3xl mb-3"><i class="fa-solid fa-lock"></i></div>ยืนยันสิทธิ์ผู้ดูแลระบบ</div>',
           input: 'password',
           inputPlaceholder: 'กรอกรหัสผ่านแอดมิน',
           showCancelButton: true,
           confirmButtonText: 'เข้าสู่ระบบ',
           cancelButtonText: 'ยกเลิก',
-          buttonsStyling: false,
-          customClass: {
-            popup: 'rounded-[20px] shadow-2xl border border-slate-100',
-            title: 'text-xl font-bold text-slate-800',
-            input: 'w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 font-mono text-center text-lg mt-4 mb-2',
-            confirmButton: 'bg-teal-600 hover:bg-teal-700 text-white font-medium px-8 py-2.5 rounded-xl shadow-md transition mx-2 mt-3',
-            cancelButton: 'bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium px-8 py-2.5 rounded-xl transition mx-2 mt-3'
-          },
           inputValidator: function(val) {
             if (!val) return 'กรุณากรอกรหัสผ่าน';
             if (val !== String(adminSystemPassword)) return 'รหัสผ่านไม่ถูกต้อง!';
@@ -1296,12 +1506,10 @@
     }
 
     function activateTabUI(tabId) {
-      // ซ่อนหน้าทั้งหมดด้วย style.display แทน class "flex" เพื่อรักษา Layout ไว้
       document.querySelectorAll('.tab-pane').forEach(el => {
         el.style.display = 'none';
       });
 
-      // รีเซ็ตปุ่มทั้งหมด
       ['tab-report', 'tab-employees', 'tab-botqr', 'tab-settings', 'tab-shift'].forEach(function(id) {
         const btn = document.getElementById('btn-' + id);
         if (btn) {
@@ -1309,7 +1517,6 @@
         }
       });
       
-      // แสดงหน้าปัจจุบัน
       const targetTab = document.getElementById(tabId);
       if(targetTab) {
          targetTab.style.display = 'block';
@@ -1386,7 +1593,7 @@
     }
 
     function handleToggleWeekendImmediate(isChecked) {
-      Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+      uiShowLoading('กำลังบันทึก...');
       google.script.run
         .withSuccessHandler(function(res) {
           Swal.close();
@@ -1424,8 +1631,8 @@
     function handleAddHoliday() {
       const isoDate = document.getElementById('holDateInput').value;
       const name = document.getElementById('holNameInput').value.trim();
-      if (!isoDate || !name) { Swal.fire('แจ้งเตือน', 'เลือกวันที่และชื่อให้ครบ', 'warning'); return; }
-      Swal.fire({ title: 'กำลังเพิ่ม...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+      if (!isoDate || !name) { Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'เลือกวันที่และชื่อให้ครบ' }); return; }
+      uiShowLoading('กำลังเพิ่ม...');
       google.script.run.withSuccessHandler(function(res) {
           Swal.close();
           if (res && res.success) {
@@ -1433,20 +1640,21 @@
             document.getElementById('holNameInput').value = '';
             renderHolidayTable(res.list);
             Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: res.message, timer: 1400, showConfirmButton: false });
-          } else { Swal.fire('ผิดพลาด', res ? res.message : '', 'warning'); }
+          } else { Swal.fire({ icon: 'warning', title: 'ผิดพลาด', text: res ? res.message : '' }); }
         }).addHolidayItem(isoDate, name);
     }
 
     function handleDeleteHoliday(isoDate) {
       Swal.fire({
         title: 'ยืนยันการลบ?',
+        text: 'คุณต้องการลบรายการวันหยุดนี้ใช่หรือไม่?',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#e11d48',
         confirmButtonText: 'ลบรายการ',
+        cancelButtonText: 'ยกเลิก'
       }).then(function(result) {
         if (result.isConfirmed) {
-          Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+          uiShowLoading('กำลังลบ...');
           google.script.run.withSuccessHandler(function(res) { Swal.close(); renderHolidayTable(res.list); }).deleteHolidayItem(isoDate);
         }
       });
@@ -1459,6 +1667,8 @@
     function applySettingsToUI(s) {
       document.getElementById('navTitle').innerText = s.appTitle || '';
       document.getElementById('navSubtitle').innerText = s.appSubtitle || '';
+
+      SERVER_ENABLE_IP = (String(s.enableIpCheck) !== 'false');
       if (s.appLogo) {
         const logoUrl = normalizeDriveUrl(s.appLogo);
         document.getElementById('navLogo').src = logoUrl;
@@ -1487,7 +1697,7 @@
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function(e) {
-        Swal.fire({ title: 'กำลังอัปโหลด...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+        uiShowLoading('กำลังอัปโหลดรูปภาพ...');
         google.script.run.withSuccessHandler(function(res) {
           Swal.close();
           if (res.success) {
@@ -1524,9 +1734,9 @@
         bannerSummary: document.getElementById('set-bannerSummary').value.trim(),
         bannerHoliday: document.getElementById('set-bannerHoliday').value.trim()
       };
-      Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+      uiShowLoading('กำลังบันทึก...');
       google.script.run.withSuccessHandler(function(res) {
-        if (res.success) { applySettingsToUI(res.settings); Swal.fire('สำเร็จ!', res.message, 'success'); }
+        if (res.success) { applySettingsToUI(res.settings); Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: res.message }); }
       }).saveAppSettings(settingsObj);
     }
 
@@ -1624,7 +1834,6 @@
         showCancelButton: true,
         confirmButtonText: 'บันทึกการแก้ไข',
         cancelButtonText: 'ยกเลิก',
-        confirmButtonColor: '#0d9488',
         preConfirm: function() {
           return {
             idCard: emp.idCard,
@@ -1640,11 +1849,11 @@
         }
       }).then(function(result) {
         if (result.isConfirmed) {
-          Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+          uiShowLoading('กำลังบันทึก...');
           google.script.run.withSuccessHandler(function(res) {
             Swal.close();
-            if (res.success) { loadEmployees(); Swal.fire('สำเร็จ!', res.message, 'success'); } 
-            else { Swal.fire('แจ้งเตือน', res.message, 'warning'); }
+            if (res.success) { loadEmployees(); Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: res.message }); } 
+            else { Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: res.message }); }
           }).updateEmployeeData(result.value);
         }
       });
@@ -1659,12 +1868,12 @@
         text: 'ยกเลิกการผูกบัญชีของ "' + fullName + '" เพื่อให้ผูกเครื่องใหม่ใช่หรือไม่',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#e11d48',
-        confirmButtonText: 'ยืนยันรีเซ็ต'
+        confirmButtonText: 'ยืนยันรีเซ็ต',
+        cancelButtonText: 'ยกเลิก'
       }).then(function(res) {
         if (res.isConfirmed) {
-          Swal.fire({ title: 'กำลังรีเซ็ต...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-          google.script.run.withSuccessHandler(function(r) { Swal.close(); loadEmployees(); Swal.fire('สำเร็จ!', r.message, 'success'); }).resetEmployeeLineUid(emp.idCard);
+          uiShowLoading('กำลังรีเซ็ตบัญชี...');
+          google.script.run.withSuccessHandler(function(r) { Swal.close(); loadEmployees(); Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: r.message }); }).resetEmployeeLineUid(emp.idCard);
         }
       });
     }
@@ -1682,28 +1891,28 @@
         workStartTime: document.getElementById('workStartTime').value,
         workEndTime: document.getElementById('workEndTime').value
       };
-      Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+      uiShowLoading('กำลังบันทึก...');
       google.script.run.withSuccessHandler(function(res) {
         if (res.success) {
-          Swal.fire('สำเร็จ!', res.message, 'success');
+          Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: res.message });
           document.getElementById('empForm').reset();
           document.getElementById('workStartTime').value = "08:30";
           document.getElementById('workEndTime').value = "16:30";
           toggleTimeInputs('รายเดือน (เวลาปกติ)', '');
           loadEmployees();
-        } else { Swal.fire('แจ้งเตือน', res.message, 'warning'); }
+        } else { Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: res.message }); }
       }).addEmployee(empObj);
     }
 
     function generateReport() {
       const idCard = document.getElementById('reportEmpSelect').value;
       const yearMonth = document.getElementById('reportMonth').value;
-      if (!idCard || !yearMonth) { Swal.fire('แจ้งเตือน', 'กรุณาเลือกพนักงานและเดือน', 'warning'); return; }
-      Swal.fire({ title: 'กำลังดึงรายงาน...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+      if (!idCard || !yearMonth) { Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณาเลือกพนักงานและเดือน' }); return; }
+      uiShowLoading('กำลังดึงรายงาน...');
 
       google.script.run.withSuccessHandler(function(res) {
         Swal.close();
-        if (!res.success) { Swal.fire('ข้อผิดพลาด', res.message, 'error'); return; }
+        if (!res.success) { Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: res.message }); return; }
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         const parts = yearMonth.split('-');
         document.getElementById('reportPeriodText').innerText = 'ประจำเดือน ' + thaiMonths[parseInt(parts[1], 10) - 1] + ' พ.ศ. ' + (parseInt(parts[0], 10) + 543);
@@ -1763,30 +1972,40 @@
     }
 
     function handleToggleReminder(enable) {
-      Swal.fire({ title: enable ? 'กำลังตั้งเวลา...' : 'กำลังยกเลิกการตั้งเวลา...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+      uiShowLoading(enable ? 'กำลังตั้งเวลา...' : 'กำลังยกเลิกการตั้งเวลา...');
       try {
-        const runner = google.script.run.withSuccessHandler(function(res) { Swal.close(); if (res && res.success) { renderReminderBadge(res.active); Swal.fire('สำเร็จ!', res.message, 'success'); } })
-        .withFailureHandler(function(err) { Swal.close(); Swal.fire('เกิดข้อผิดพลาด (กรุณากดอนุญาตสิทธิ์)', err.message, 'error'); });
+        const runner = google.script.run.withSuccessHandler(function(res) { Swal.close(); if (res && res.success) { renderReminderBadge(res.active); Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: res.message }); } })
+        .withFailureHandler(function(err) { Swal.close(); Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด (กรุณากดอนุญาตสิทธิ์)', text: err.message }); });
         if (enable) runner.enableDailyReminderTriggers(); else runner.disableDailyReminderTriggers();
-      } catch (e) { Swal.close(); Swal.fire('ยังไม่ได้อัปเดต Deploy', 'กรุณากด Deploy > New version ก่อนครับ', 'warning'); }
+      } catch (e) { Swal.close(); Swal.fire({ icon: 'warning', title: 'ยังไม่ได้อัปเดต Deploy', text: 'กรุณากด Deploy > New version ก่อนครับ' }); }
     }
 
     function handleTestReminder(periodType) {
-      Swal.fire({ title: 'กำลังส่งแจ้งเตือน...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+      uiShowLoading('กำลังส่งแจ้งเตือน...');
       try {
-        google.script.run.withSuccessHandler(function(res) { Swal.close(); if (res && res.success) { Swal.fire('ส่งสำเร็จ!', res.message, 'success'); } else { Swal.fire('แจ้งเตือน', res ? res.message : '', 'warning'); } })
-        .withFailureHandler(function(err) { Swal.close(); Swal.fire('ข้อผิดพลาด', err.message, 'error'); }).testSendReminderFromAdmin(periodType);
-      } catch (e) { Swal.close(); Swal.fire('ยังไม่ได้อัปเดต Deploy', 'กรุณากด Deploy > New version ก่อนครับ', 'warning'); }
+        google.script.run.withSuccessHandler(function(res) { Swal.close(); if (res && res.success) { Swal.fire({ icon: 'success', title: 'ส่งสำเร็จ!', text: res.message }); } else { Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: res ? res.message : '' }); } })
+        .withFailureHandler(function(err) { Swal.close(); Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: err.message }); }).testSendReminderFromAdmin(periodType);
+      } catch (e) { Swal.close(); Swal.fire({ icon: 'warning', title: 'ยังไม่ได้อัปเดต Deploy', text: 'กรุณากด Deploy > New version ก่อนครับ' }); }
     }
 
-    // ==========================================
-    // ส่วนจัดการรหัสกะ (Shift Master) จากหน้าตั้งค่า
-    // ==========================================
     let currentShiftMasterList = [];
 
+    // 🔴 5. แก้ไขบั๊ก Array.isArray สำหรับตารางกะ (ป้องกัน .forEach Error) 🔴
     function loadShiftMasterSettings() {
       google.script.run.withSuccessHandler(function(list) {
-        currentShiftMasterList = list || [];
+        if (Array.isArray(list)) {
+          currentShiftMasterList = list;
+        } else if (list && Array.isArray(list.list)) {
+          currentShiftMasterList = list.list;
+        } else if (list && Array.isArray(list.data)) {
+          currentShiftMasterList = list.data;
+        } else {
+          currentShiftMasterList = [];
+        }
+        renderShiftMasterTable();
+      }).withFailureHandler(function(err) {
+        console.error("Load Shift Master Error:", err);
+        currentShiftMasterList = [];
         renderShiftMasterTable();
       }).getShiftMasterSettings();
     }
@@ -1794,17 +2013,19 @@
     function renderShiftMasterTable() {
       const tbody = document.getElementById('shiftMasterTableBody');
       tbody.innerHTML = '';
-      if (!currentShiftMasterList || currentShiftMasterList.length === 0) {
+      
+      if (!Array.isArray(currentShiftMasterList) || currentShiftMasterList.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-slate-400">ไม่มีรายการกะในระบบ</td></tr>';
         return;
       }
+      
       let html = '';
       currentShiftMasterList.forEach(function(item, idx) {
         html += '<tr class="hover:bg-indigo-50/30">' +
-          '<td class="py-2.5 px-3 font-bold text-indigo-700">' + item.code + '</td>' +
-          '<td class="py-2.5 px-3 text-slate-700">' + item.name + '</td>' +
-          '<td class="py-2.5 px-3 text-center font-mono text-xs">' + item.in + '</td>' +
-          '<td class="py-2.5 px-3 text-center font-mono text-xs">' + item.out + '</td>' +
+          '<td class="py-2.5 px-3 font-bold text-indigo-700">' + (item.code || '') + '</td>' +
+          '<td class="py-2.5 px-3 text-slate-700">' + (item.name || '') + '</td>' +
+          '<td class="py-2.5 px-3 text-center font-mono text-xs">' + (item.in || '') + '</td>' +
+          '<td class="py-2.5 px-3 text-center font-mono text-xs">' + (item.out || '') + '</td>' +
           '<td class="py-2.5 px-3 text-center space-x-1">' +
             '<button type="button" onclick="editShiftMasterItem(' + idx + ')" class="text-teal-500 hover:text-teal-700 px-1" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>' +
             '<button type="button" onclick="deleteShiftMasterItem(' + idx + ')" class="text-rose-500 hover:text-rose-700 px-1" title="ลบ"><i class="fa-solid fa-trash-can"></i></button>' +
@@ -1821,13 +2042,12 @@
       const timeOut = document.getElementById('shiftOutInput').value;
 
       if (!code || !name || !timeIn || !timeOut) {
-        Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลกะให้ครบทุกช่อง', 'warning'); return;
+        Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณากรอกข้อมูลกะให้ครบทุกช่อง' }); return;
       }
       if (code === 'OFF') {
-        Swal.fire('แจ้งเตือน', 'รหัส OFF เป็นค่าเริ่มต้นของระบบ (วันหยุด) ไม่สามารถตั้งซ้ำได้ครับ', 'warning'); return;
+        Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'รหัส OFF เป็นค่าเริ่มต้นของระบบ (วันหยุด) ไม่สามารถตั้งซ้ำได้ครับ' }); return;
       }
 
-      // อัปเดตถ้ามีรหัสเดิมอยู่แล้ว หรือ เพิ่มเข้าไปใหม่
       const existingIdx = currentShiftMasterList.findIndex(s => s.code === code);
       if (existingIdx >= 0) currentShiftMasterList[existingIdx] = { code, name, in: timeIn, out: timeOut };
       else currentShiftMasterList.push({ code, name, in: timeIn, out: timeOut });
@@ -1848,24 +2068,317 @@
     }
 
     function deleteShiftMasterItem(idx) {
-      currentShiftMasterList.splice(idx, 1);
-      renderShiftMasterTable();
+      Swal.fire({
+        title: 'ยืนยันการลบกะ?',
+        text: 'คุณต้องการลบรหัสกะนี้ใช่หรือไม่?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ลบรายการ',
+        cancelButtonText: 'ยกเลิก'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          currentShiftMasterList.splice(idx, 1);
+          renderShiftMasterTable();
+        }
+      });
     }
 
     function saveShiftMasterToServer() {
       if (currentShiftMasterList.length === 0) {
-        Swal.fire('แจ้งเตือน', 'ต้องมีกะอย่างน้อย 1 กะในระบบครับ', 'warning'); return;
+        Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'ต้องมีกะอย่างน้อย 1 กะในระบบครับ' }); return;
       }
-      Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+      uiShowLoading('กำลังบันทึก...');
       google.script.run.withSuccessHandler(function(res) {
         Swal.close();
         if (res.success) {
           Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: res.message, timer: 1500, showConfirmButton: false });
         } else {
-          Swal.fire('ผิดพลาด', res.message, 'error');
+          Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
         }
       }).saveShiftMasterSettings(currentShiftMasterList);
     }
+
+   // --- ระบบนาฬิกาเรียลไทม์ ---
+    function updateClock() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+      const dateEl = document.getElementById('realtimeDate');
+      const clockEl = document.getElementById('realtimeClock');
+      if(clockEl) clockEl.innerText = timeStr;
+      if(dateEl && dateEl.innerText === 'กำลังโหลด...') dateEl.innerText = now.toLocaleDateString('th-TH', options);
+    }
+    setInterval(updateClock, 1000);
+
+    // --- Plugin จำลองเงา 3D สำหรับ Chart.js ---
+    const shadowPlugin = {
+      id: 'shadowPlugin',
+      beforeDraw: (chart) => {
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 4;
+        ctx.shadowOffsetY = 4;
+      },
+      afterDraw: (chart) => { chart.ctx.restore(); }
+    };
+
+    let myPieChart = null;
+    let calendarInstance = null;
+    let donutCycleInterval;
+
+    function getThemePrimaryColor() { return getComputedStyle(document.documentElement).getPropertyValue('--theme-primary').trim() || '#0d9488'; }
+
+    // ฟังก์ชันสลับข้อความตรงกลางกราฟวงกลม
+    function startDonutCycle(stats) {
+      if(donutCycleInterval) clearInterval(donutCycleInterval);
+      const items = [
+        { label: "มาทำงาน", value: stats.present, color: "text-emerald-600" },
+        { label: "มาสาย", value: stats.late, color: "text-amber-500" },
+        { label: "ขาด/ไม่ลงเวลา", value: stats.absent, color: "text-rose-500" }
+      ];
+      let idx = 0;
+      const labelEl = document.getElementById('donutCenterLabel');
+      const valEl = document.getElementById('donutCenterValue');
+      const container = document.getElementById('donutTextContainer');
+
+      const updateCenterText = () => {
+        container.style.opacity = 0; // Fade out
+        setTimeout(() => {
+          labelEl.className = `text-[10px] font-bold tracking-wide ${items[idx].color}`;
+          labelEl.innerText = items[idx].label;
+          valEl.innerText = items[idx].value;
+          container.style.opacity = 1; // Fade in
+          idx = (idx + 1) % items.length;
+        }, 300);
+      };
+      
+      updateCenterText();
+      donutCycleInterval = setInterval(updateCenterText, 10000); // สลับทุก 10 วินาที
+    }
+
+    let allEmpSummary = [];
+    let individualChartInstance = null;
+
+    function updateIndividualStats() {
+      const val = document.getElementById('dash-emp-select').value;
+      let p = 0, l = 0, lv = 0, a = 0;
+      let labels = [], dataHours = [], bgColors = [];
+
+      if (val === 'all') {
+        // รวมข้อมูลทุกคน
+        let dateMap = {};
+        allEmpSummary.forEach(e => { 
+          p += e.present; l += e.late; lv += e.leave; a += e.absent; 
+          e.history.forEach(h => {
+            if(!dateMap[h.date]) dateMap[h.date] = 0;
+            dateMap[h.date] += h.hours;
+          });
+        });
+        labels = Object.keys(dateMap).sort();
+        dataHours = labels.map(k => dateMap[k].toFixed(2));
+        bgColors = labels.map(() => '#8B5CF6'); // สีม่วงสำหรับภาพรวม
+      } else {
+        // ข้อมูลเฉพาะบุคคล
+        const target = allEmpSummary.find(e => e.idCard === val);
+        if (target) {
+          p = target.present; l = target.late; lv = target.leave; a = target.absent;
+          target.history.forEach(h => {
+            labels.push(h.date);
+            dataHours.push(h.hours.toFixed(2));
+            // สาย=ส้ม, ลา=น้ำเงิน, ขาด=เทา, ปกติ=เขียว
+            bgColors.push(h.status.includes('สาย') ? '#F59E0B' : (h.status === 'ลางาน' ? '#3B82F6' : (h.hours > 0 ? '#10B981' : '#E2E8F0')));
+          });
+        }
+      }
+
+      document.getElementById('ind-present').innerText = p;
+      document.getElementById('ind-late').innerText = l;
+      document.getElementById('ind-leave').innerText = lv;
+      document.getElementById('ind-absent').innerText = a;
+
+      const ctx = document.getElementById('individualChart').getContext('2d');
+      if (individualChartInstance) individualChartInstance.destroy();
+      individualChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels.length > 0 ? labels : ['ไม่มีข้อมูล'],
+          datasets: [{
+            label: val === 'all' ? 'ชั่วโมงทำงานรวมทั้งหน่วยงาน (ชม.)' : 'ชั่วโมงทำงาน (ชม.)',
+            data: dataHours.length > 0 ? dataHours : [0],
+            backgroundColor: bgColors.length > 0 ? bgColors : ['#e2e8f0'],
+            borderRadius: 6,
+            barPercentage: 0.5
+          }]
+        },
+        plugins: [shadowPlugin],
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { enabled: true, titleFont: {family: 'Kanit'}, bodyFont: {family: 'Kanit'} } },
+          scales: { 
+            y: { beginAtZero: true, grid: { borderDash: [4, 4] }, ticks: { font: { family: 'Kanit'} } },
+            x: { grid: { display: false }, ticks: { font: { family: 'Kanit'} } } 
+          }
+        }
+      });
+    }
+
+    function loadDashboardData() {
+      uiShowLoading('อัปเดตแดชบอร์ด...');
+      google.script.run.withSuccessHandler(function(res) {
+        Swal.close();
+        if(res && res.success) {
+          const themePrimary = getThemePrimaryColor();
+
+          // 1. อัปเดตตัวเลข Card
+          document.getElementById('dash-total').innerText = res.stats.total;
+          document.getElementById('dash-present').innerText = res.stats.present;
+          document.getElementById('dash-leave').innerText = res.stats.leave;
+
+          document.getElementById('dash-workdays').innerText = res.stats.workingDays;
+          const now = new Date();
+          const currentMonthVal = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+          if(!document.getElementById('dash-month-select').value) document.getElementById('dash-month-select').value = currentMonthVal;
+
+          // นำข้อมูลเข้า Dropdown รายบุคคล
+          allEmpSummary = res.employeesSummary || [];
+          const selectEl = document.getElementById('dash-emp-select');
+          selectEl.innerHTML = '<option value="all">-- 📊 ภาพรวมชั่วโมงทำงานทั้งหน่วยงาน --</option>';
+          allEmpSummary.forEach(emp => {
+            selectEl.innerHTML += `<option value="${emp.idCard}">${emp.name}</option>`;
+          });
+          updateIndividualStats(); // วาดกราฟใหม่
+
+          // เริ่มฟังก์ชันสลับข้อความกราฟ
+          startDonutCycle(res.stats);
+
+          // 2. เรนเดอร์กราฟโดนัท (Neumorphism 3D)
+          const ctxPie = document.getElementById('todayPieChart').getContext('2d');
+          if(myPieChart) myPieChart.destroy();
+          myPieChart = new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+              labels: ['มาตรงเวลา', 'มาสาย', 'ลางาน', 'ขาด/ยังไม่ลงเวลา'],
+              datasets: [{
+                data: [res.stats.present - res.stats.late, res.stats.late, res.stats.leave, res.stats.absent],
+                backgroundColor: [themePrimary, '#F59E0B', '#3B82F6', '#F43F5E'],
+                borderWidth: 4, 
+                borderColor: '#f1f5f9', // สีเดียวกับพื้นหลังเพื่อให้ดูกลืน
+                hoverOffset: 6
+              }]
+            },
+            plugins: [shadowPlugin],
+            options: { 
+              responsive: true, maintainAspectRatio: false, cutout: '75%', 
+              plugins: { legend: { display: false }, tooltip: { enabled: true } } 
+            }
+          });
+
+          // 3. สร้างรายชื่อพนักงานวันนี้ (Neu Pressed Scroll)
+          const listContainer = document.getElementById('todayEmployeeList');
+          document.getElementById('todayBadgeLabel').innerText = new Date().toLocaleTimeString('th-TH').slice(0,5) + ' น.';
+          
+          if(res.todayDetails.length === 0) {
+            listContainer.innerHTML = '<div class="h-full flex items-center justify-center text-slate-400 text-xs">ไม่มีข้อมูลพนักงาน</div>';
+          } else {
+            let listHtml = '';
+            res.todayDetails.forEach(emp => {
+              let statusCss = "text-slate-500 bg-slate-200";
+              let timeText = emp.status;
+              let icon = '<i class="fa-solid fa-user-xmark"></i>';
+              let iconColor = 'text-slate-400';
+
+              if (emp.status === 'ปกติ' || emp.status === 'สาย') {
+                statusCss = emp.status === 'สาย' ? "text-amber-600 bg-amber-100" : "text-emerald-600 bg-emerald-100";
+                timeText = `${emp.timeIn || '-'} - ${emp.timeOut || '-'}`;
+                icon = '<i class="fa-solid fa-user-check"></i>';
+                iconColor = emp.status === 'สาย' ? 'text-amber-500' : 'text-emerald-500';
+              } else if (emp.status === 'ลางาน' || emp.note !== '') {
+                statusCss = "text-blue-600 bg-blue-100";
+                icon = '<i class="fa-solid fa-plane"></i>';
+                iconColor = 'text-blue-500';
+                timeText = 'ลางาน';
+              }
+
+              listHtml += `
+                <div class="flex justify-between items-center p-2 rounded-lg hover:bg-slate-100 transition cursor-default">
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-full neu-btn flex justify-center items-center text-xs ${iconColor}">${icon}</div>
+                    <div class="min-w-0">
+                      <div class="text-[11px] font-bold text-slate-700 truncate w-24" title="${emp.name}">${emp.name}</div>
+                      <div class="text-[9px] text-slate-400 truncate w-24">${emp.position}</div>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-[9px] font-bold px-1.5 py-0.5 rounded ${statusCss}">${timeText}</div>
+                  </div>
+                </div>
+              `;
+            });
+            listContainer.innerHTML = listHtml;
+          }
+
+          // 4. ปฏิทิน Compact แบบ Trello
+          const calendarEl = document.getElementById('attendanceCalendar');
+          if(calendarInstance) { calendarInstance.destroy(); }
+
+          calendarInstance = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            themeSystem: 'standard',
+            locale: 'th',
+            height: '100%',
+            headerToolbar: { left: 'prev,next', center: 'title', right: 'today' },
+            events: res.calendarEvents,
+            eventClick: function(info) {
+              const props = info.event.extendedProps;
+              const dateThai = info.event.start.toLocaleDateString('th-TH', { year:'numeric', month:'short', day:'numeric' });
+
+              if(props.type === 'holiday') {
+                 Swal.fire({ icon: 'info', title: info.event.title, text: 'วันหยุดนักขัตฤกษ์' });
+              } else if(props.type === 'work') {
+                 let modalHtml = '<div class="text-left max-h-64 overflow-y-auto custom-scrollbar pr-2 space-y-3">';
+                 if(props.present && props.present.length > 0) {
+                   modalHtml += `<div class="neu-card p-3"><div class="text-xs font-bold text-teal-600 mb-2 border-b border-slate-200 pb-1 flex justify-between"><span>✅ มาทำงาน</span><span>${props.present.length} คน</span></div>`;
+                   props.present.forEach(p => { modalHtml += `<div class="flex justify-between text-xs py-1 text-slate-600"><span class="truncate pr-2">${p.name}</span><span class="font-mono text-[10px] bg-slate-100 px-1 rounded">${p.timeIn} - ${p.timeOut}</span></div>`; });
+                   modalHtml += '</div>';
+                 }
+                 if(props.leave && props.leave.length > 0) {
+                   modalHtml += `<div class="neu-card p-3"><div class="text-xs font-bold text-blue-600 mb-2 border-b border-slate-200 pb-1 flex justify-between"><span>🛫 ลางาน</span><span>${props.leave.length} คน</span></div>`;
+                   props.leave.forEach(p => { modalHtml += `<div class="flex justify-between text-xs py-1 text-slate-600"><span class="truncate pr-2">${p.name}</span><span class="text-[10px] text-blue-500">${p.note || 'ลางาน'}</span></div>`; });
+                   modalHtml += '</div>';
+                 }
+                 if(props.absent && props.absent.length > 0) {
+                   modalHtml += `<div class="neu-card p-3"><div class="text-xs font-bold text-rose-600 mb-2 border-b border-slate-200 pb-1 flex justify-between"><span>❌ ขาด/ไม่ลงเวลา</span><span>${props.absent.length} คน</span></div>`;
+                   props.absent.forEach(p => { modalHtml += `<div class="flex justify-between text-xs py-1 text-slate-600"><span class="truncate pr-2">${p.name}</span><span class="text-[10px] text-rose-500">${p.status}</span></div>`; });
+                   modalHtml += '</div>';
+                 }
+                 modalHtml += '</div>';
+
+                 Swal.fire({ title: `<span class="text-sm font-bold">ข้อมูลวันที่ ${dateThai}</span>`, html: modalHtml, showConfirmButton: false, showCloseButton: true });
+              }
+            }
+          });
+          calendarInstance.render();
+        }
+      }).getDashboardStats();
+    }
+
+    function fetchMonthlyChartData() {
+      const ym = document.getElementById('dash-month-select').value;
+      if(!ym) return;
+      uiShowLoading('กำลังดึงข้อมูลสถิติ...');
+      google.script.run.withSuccessHandler(function(res) {
+        Swal.close();
+        if(res.success) {
+          allEmpSummary = res.employeesSummary || [];
+          updateIndividualStats();
+        } else {
+          Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
+        }
+      }).getDashboardMonthlySummary(ym);
+    }
+    
 
   </script>
 </body>
