@@ -1249,13 +1249,14 @@
         return;
       }
       
-      const payload = {
+     const payload = {
         userId: currentLineUid,
         idCard: currentSavedIdCard || '',
         leaveCategory: document.getElementById('selectedLeaveCategory').value,
         startDateIso: document.getElementById('leaveStartDate').value,
         endDateIso: document.getElementById('leaveEndDate').value,
-        customNote: document.getElementById('leaveCustomNote').value.trim()
+        customNote: document.getElementById('leaveCustomNote').value.trim(),
+        pictureUrl: localStorage.getItem('ATTENDANCE_LINE_PIC') || ''
       };
       uiShowLoading('กำลังบันทึกข้อมูล...');
       google.script.run
@@ -1283,15 +1284,14 @@
         let isResolved = false;
         const timer = setTimeout(function() {
           if (!isResolved) { isResolved = true; resolve(''); }
-        }, 6000);
+        }, 10000);
 
         try {
           liff.init({ liffId: LIFF_ID_KEY }).then(function() {
-            const ctx = liff.getContext();
-            if (ctx && ctx.userId) {
-              if (!isResolved) { isResolved = true; clearTimeout(timer); resolve(ctx.userId); }
-            } else if (liff.isLoggedIn() || liff.isInClient()) {
+            if (liff.isLoggedIn() || liff.isInClient()) {
               liff.getProfile().then(function(p) {
+                // เซฟรูปโปรไฟล์ไว้ส่งให้หลังบ้าน
+                localStorage.setItem('ATTENDANCE_LINE_PIC', p.pictureUrl || '');
                 if (!isResolved) { isResolved = true; clearTimeout(timer); resolve(p.userId); }
               }).catch(function() {
                 if (!isResolved) { isResolved = true; clearTimeout(timer); resolve(''); }
@@ -1418,7 +1418,8 @@
         userId: currentLineUid,
         idCard: currentSavedIdCard || '',
         clientIp: detectedPublicIp,
-        earlyReason: earlyReasonText
+        earlyReason: earlyReasonText,
+        pictureUrl: localStorage.getItem('ATTENDANCE_LINE_PIC') || ''
       });
     }
 
@@ -2301,10 +2302,15 @@
                 timeText = 'ลางาน';
               }
 
+              // ใช้รูปภาพถ้ามี ถ้าไม่มีให้ใช้ไอคอนเดิม
+              let avatarHtml = emp.picUrl 
+                ? `<img src="${emp.picUrl}" class="w-7 h-7 rounded-full object-cover shrink-0 shadow-sm border border-slate-200">`
+                : `<div class="w-7 h-7 rounded-full neu-btn flex justify-center items-center text-xs ${iconColor}">${icon}</div>`;
+
               listHtml += `
                 <div class="flex justify-between items-center p-2 rounded-lg hover:bg-slate-100 transition cursor-default">
                   <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-full neu-btn flex justify-center items-center text-xs ${iconColor}">${icon}</div>
+                    ${avatarHtml}
                     <div class="min-w-0">
                       <div class="text-[11px] font-bold text-slate-700 truncate w-24" title="${emp.name}">${emp.name}</div>
                       <div class="text-[9px] text-slate-400 truncate w-24">${emp.position}</div>
@@ -2315,7 +2321,6 @@
                   </div>
                 </div>
               `;
-            });
             listContainer.innerHTML = listHtml;
           }
 
@@ -2340,20 +2345,28 @@
                  let modalHtml = '<div class="text-left max-h-64 overflow-y-auto custom-scrollbar pr-2 space-y-3">';
                  if(props.present && props.present.length > 0) {
                    modalHtml += `<div class="neu-card p-3"><div class="text-xs font-bold text-teal-600 mb-2 border-b border-slate-200 pb-1 flex justify-between"><span>✅ มาทำงาน</span><span>${props.present.length} คน</span></div>`;
-                   props.present.forEach(p => { modalHtml += `<div class="flex justify-between text-xs py-1 text-slate-600"><span class="truncate pr-2">${p.name}</span><span class="font-mono text-[10px] bg-slate-100 px-1 rounded">${p.timeIn} - ${p.timeOut}</span></div>`; });
+                   props.present.forEach(p => { 
+                     let pic = p.picUrl ? `<img src="${p.picUrl}" class="w-5 h-5 rounded-full inline-block mr-1.5 object-cover shadow-sm">` : `<i class="fa-solid fa-user-check text-teal-500 mr-1.5"></i>`;
+                     modalHtml += `<div class="flex justify-between text-xs py-1 text-slate-600 items-center"><span class="truncate pr-2 flex items-center">${pic}${p.name}</span><span class="font-mono text-[10px] bg-slate-100 px-1 rounded">${p.timeIn} - ${p.timeOut}</span></div>`; 
+                   });
                    modalHtml += '</div>';
                  }
                  if(props.leave && props.leave.length > 0) {
                    modalHtml += `<div class="neu-card p-3"><div class="text-xs font-bold text-blue-600 mb-2 border-b border-slate-200 pb-1 flex justify-between"><span>🛫 ลางาน</span><span>${props.leave.length} คน</span></div>`;
-                   props.leave.forEach(p => { modalHtml += `<div class="flex justify-between text-xs py-1 text-slate-600"><span class="truncate pr-2">${p.name}</span><span class="text-[10px] text-blue-500">${p.note || 'ลางาน'}</span></div>`; });
+                   props.leave.forEach(p => { 
+                     let pic = p.picUrl ? `<img src="${p.picUrl}" class="w-5 h-5 rounded-full inline-block mr-1.5 object-cover shadow-sm">` : `<i class="fa-solid fa-plane text-blue-500 mr-1.5"></i>`;
+                     modalHtml += `<div class="flex justify-between text-xs py-1 text-slate-600 items-center"><span class="truncate pr-2 flex items-center">${pic}${p.name}</span><span class="text-[10px] text-blue-500">${p.note || 'ลางาน'}</span></div>`; 
+                   });
                    modalHtml += '</div>';
                  }
                  if(props.absent && props.absent.length > 0) {
                    modalHtml += `<div class="neu-card p-3"><div class="text-xs font-bold text-rose-600 mb-2 border-b border-slate-200 pb-1 flex justify-between"><span>❌ ขาด/ไม่ลงเวลา</span><span>${props.absent.length} คน</span></div>`;
-                   props.absent.forEach(p => { modalHtml += `<div class="flex justify-between text-xs py-1 text-slate-600"><span class="truncate pr-2">${p.name}</span><span class="text-[10px] text-rose-500">${p.status}</span></div>`; });
+                   props.absent.forEach(p => { 
+                     let pic = p.picUrl ? `<img src="${p.picUrl}" class="w-5 h-5 rounded-full inline-block mr-1.5 object-cover shadow-sm">` : `<i class="fa-solid fa-user-xmark text-rose-400 mr-1.5"></i>`;
+                     modalHtml += `<div class="flex justify-between text-xs py-1 text-slate-600 items-center"><span class="truncate pr-2 flex items-center">${pic}${p.name}</span><span class="text-[10px] text-rose-500">${p.status}</span></div>`; 
+                   });
                    modalHtml += '</div>';
                  }
-                 modalHtml += '</div>';
 
                  Swal.fire({ title: `<span class="text-sm font-bold">ข้อมูลวันที่ ${dateThai}</span>`, html: modalHtml, showConfirmButton: false, showCloseButton: true });
               }
