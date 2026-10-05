@@ -674,6 +674,28 @@
             </div>
           </div>
 
+          <!-- หมวดหมู่สำรองข้อมูล (Data Archiving) -->
+          <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border-2 border-rose-500/40 p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between border-b pb-3 mb-4 gap-3">
+              <div>
+                <h2 class="text-lg font-semibold text-rose-700 flex items-center"><i class="fa-solid fa-server mr-2"></i> ระบบสำรองและล้างข้อมูลเก่า (Data Archiving)</h2>
+                <p class="text-xs text-slate-500 mt-0.5">ดึงข้อมูลเข้าออกงานในอดีตไปเก็บที่ชีต <b>Archive_Data</b> และเคลียร์พื้นที่ชีตพนักงาน เพื่อให้ระบบโหลดเร็ว</p>
+              </div>
+            </div>
+            <div class="p-4 rounded-xl bg-rose-50/50 border border-rose-200 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div class="w-full md:flex-1 space-y-1">
+                <label class="block text-sm font-semibold text-rose-900">เลือกรอบ 6 เดือนที่ต้องการสำรองข้อมูล <span class="text-rose-500">*</span></label>
+                <select id="archivePeriodSelect" class="w-full px-3.5 py-2.5 bg-white border border-rose-300 rounded-xl font-medium text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 transition cursor-pointer">
+                  <!-- จะถูกสร้างตัวเลือกอัตโนมัติด้วย JavaScript -->
+                </select>
+                <p class="text-[10px] text-rose-600 mt-1"><i class="fa-solid fa-circle-exclamation mr-1"></i> <b>คำเตือน:</b> ควรทำเมื่อสิ้นสุดรอบประเมินแล้วเท่านั้น (เช่น ทำช่วงกลางเดือน เม.ย. หรือ ต.ค.)</p>
+              </div>
+              <button type="button" onclick="executeDataArchive()" class="w-full md:w-auto bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-box-archive mr-2"></i> เริ่มการสำรองข้อมูล
+              </button>
+            </div>
+          </div>
+
           <form id="settingsForm" onsubmit="handleSaveSettings(event)" class="space-y-6">
             <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border-2 border-teal-500/50 p-6">
               <div class="flex flex-col md:flex-row md:items-center justify-between border-b pb-3 mb-5 gap-2">
@@ -2390,6 +2412,67 @@
           Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
         }
       }).getDashboardMonthlySummary(ym);
+    }
+
+    // สร้างตัวเลือกรอบการประเมินอัตโนมัติ (คำนวณจากวันที่ปัจจุบัน)
+    function generateArchivePeriods() {
+      const select = document.getElementById('archivePeriodSelect');
+      if (!select) return;
+      
+      const now = new Date();
+      let currentYear = now.getFullYear();
+      let optionsHtml = '';
+      
+      // สร้างตัวเลือกย้อนหลัง 3 ปี
+      for(let y = currentYear; y >= currentYear - 2; y--) {
+        // รอบ 2 (เม.ย. - ก.ย.) ของปีนั้น
+        optionsHtml += `<option value="${y}-H2">รอบ 6 เดือนหลัง (1 เม.ย. ${y + 543} - 30 ก.ย. ${y + 543})</option>`;
+        // รอบ 1 (ต.ค. ปีก่อนหน้า - มี.ค. ปีนี้)
+        optionsHtml += `<option value="${y}-H1">รอบ 6 เดือนแรก (1 ต.ค. ${y + 542} - 31 มี.ค. ${y + 543})</option>`;
+      }
+      select.innerHTML = optionsHtml;
+      
+      // Auto-select: ถ้าตอนนี้คือเดือนตุลาคม (เดือน 10) ระบบจะเลือก H2 (เม.ย.-ก.ย.) ให้ก่อน
+      if (now.getMonth() + 1 >= 10 || now.getMonth() + 1 <= 3) {
+        select.value = `${currentYear}-H2`;
+      } else {
+        select.value = `${currentYear}-H1`;
+      }
+    }
+    // เรียกใช้งานฟังก์ชันทันทีเมื่อเว็บโหลด
+    setTimeout(generateArchivePeriods, 1000);
+
+    // ฟังก์ชันส่งคำสั่งสำรองข้อมูล
+    function executeDataArchive() {
+      const selectEl = document.getElementById('archivePeriodSelect');
+      const periodVal = selectEl.value;
+      const periodText = selectEl.options[selectEl.selectedIndex].text;
+
+      Swal.fire({
+        title: 'ยืนยันการสำรองข้อมูล?',
+        html: `<p class="text-sm text-slate-600 mb-2">คุณกำลังจะดึงข้อมูลของ:<br><b class="text-rose-600">${periodText}</b></p><p class="text-xs text-slate-500">ข้อมูลจะถูกย้ายไปเก็บที่ชีต <b>Archive_Data</b> และจะถูกลบออกจากหน้าชีตของพนักงานแต่ละคน เพื่อลดความหน่วงของระบบ</p>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#E11D48',
+        cancelButtonColor: '#cbd5e1',
+        confirmButtonText: 'ใช่, ดำเนินการสำรองข้อมูล',
+        cancelButtonText: 'ยกเลิก'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          uiShowLoading('ระบบกำลังทยอยย้ายข้อมูล... (อาจใช้เวลา 1-2 นาที)');
+          google.script.run.withSuccessHandler(function(res) {
+            Swal.close();
+            if(res.success) {
+              Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: res.message });
+            } else {
+              Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
+            }
+          }).withFailureHandler(function(err) {
+            Swal.close();
+            Swal.fire({ icon: 'error', title: 'การดำเนินการล้มเหลว', text: err.message });
+          }).archiveAttendanceData(periodVal);
+        }
+      });
     }
     
 
