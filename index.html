@@ -674,6 +674,27 @@
             </div>
           </div>
 
+          <!-- ตั้งค่าแจ้งเตือนผู้บริหาร -->
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border-2 border-purple-500/40 p-6">
+              <div class="flex flex-col md:flex-row md:items-center justify-between border-b pb-3 mb-4 gap-3">
+                <div>
+                  <h2 class="text-lg font-semibold text-purple-700 flex items-center"><i class="fa-solid fa-user-tie mr-2"></i> 4. แจ้งเตือนสรุปยอดรายวันสำหรับผู้บริหาร</h2>
+                  <p class="text-xs text-slate-500 mt-0.5">ส่งรายงานเวลา 09:00 น. และ 17:30 น. อัตโนมัติ (พร้อมกับการแจ้งเตือนพนักงาน)</p>
+                </div>
+              </div>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1">LINE UID ของผู้บริหาร (ใส่ได้หลายคน คั่นด้วยลูกน้ำ , )</label>
+                  <input type="text" id="set-executiveUids" placeholder="เช่น U1234567890abcdef..., U0987654321..." class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl font-mono text-sm focus:outline-none theme-border">
+                  <p class="text-[10px] text-slate-500 mt-1">* หมายเหตุ: ผู้บริหารต้องแอด LINE Bot ของระบบไว้ด้วยจึงจะได้รับข้อความ</p>
+                </div>
+                <div class="flex gap-2 pt-2">
+                  <button type="button" onclick="handleTestExecutive('MORNING')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold py-2.5 px-4 rounded-xl shadow transition"><i class="fa-solid fa-sun mr-1"></i> ทดสอบส่งสรุป 09:00</button>
+                  <button type="button" onclick="handleTestExecutive('EVENING')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2.5 px-4 rounded-xl shadow transition"><i class="fa-solid fa-moon mr-1"></i> ทดสอบส่งสรุป 17:30</button>
+                </div>
+              </div>
+            </div>
+
           <form id="settingsForm" onsubmit="handleSaveSettings(event)" class="space-y-6">
             <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border-2 border-teal-500/50 p-6">
               <div class="flex flex-col md:flex-row md:items-center justify-between border-b pb-3 mb-5 gap-2">
@@ -1466,6 +1487,19 @@
       }
     }
 
+    function handleTestExecutive(periodType) {
+      uiShowLoading('กำลังส่งรายงานสรุปให้ผู้บริหาร...');
+      try {
+        google.script.run.withSuccessHandler(function(res) { 
+          Swal.close(); 
+          if (res && res.success) { Swal.fire({ icon: 'success', title: 'ส่งสำเร็จ!', text: res.message }); } 
+          else { Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: res ? res.message : '' }); } 
+        }).withFailureHandler(function(err) { 
+          Swal.close(); Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: err.message }); 
+        }).testSendExecutiveSummary(periodType);
+      } catch (e) { Swal.close(); Swal.fire({ icon: 'warning', title: 'ยังไม่ได้อัปเดต Deploy', text: 'กรุณากด Deploy > New version ก่อนครับ' }); }
+    }
+
     function toggleScannerPreviewMode(targetMode) {
       document.getElementById('adminDashboardApp').classList.add('hidden');
       document.getElementById('wifiScannerApp').classList.add('hidden');
@@ -1702,7 +1736,7 @@
       document.getElementById('set-adminPassword').value = adminSystemPassword;
       document.getElementById('set-blockWeekend').checked = (String(s.blockWeekend) !== 'false');
       document.getElementById('set-enableIpCheck').checked = (String(s.enableIpCheck) !== 'false');
-      const fields = [ 'appTitle', 'appSubtitle', 'appLogo', 'bgWatermark', 'bgOpacity', 'lineToken', 'botBasicId', 'botQrUrl', 'officeIps', 'bannerPR', 'bannerCheckIn', 'bannerCheckOut', 'bannerLeave', 'bannerSummary', 'bannerHoliday' ];
+      const fields = [ 'appTitle', 'appSubtitle', 'appLogo', 'bgWatermark', 'bgOpacity', 'lineToken', 'botBasicId', 'botQrUrl', 'officeIps', 'bannerPR', 'bannerCheckIn', 'bannerCheckOut', 'bannerLeave', 'bannerSummary', 'bannerHoliday', 'executiveUids' ];
       fields.forEach(function(k) {
         const el = document.getElementById('set-' + k);
         if (el && s[k] !== undefined) el.value = s[k];
@@ -1755,8 +1789,13 @@
         bannerCheckOut: document.getElementById('set-bannerCheckOut').value.trim(),
         bannerLeave: document.getElementById('set-bannerLeave').value.trim(),
         bannerSummary: document.getElementById('set-bannerSummary').value.trim(),
-        bannerHoliday: document.getElementById('set-bannerHoliday').value.trim()
+        bannerHoliday: document.getElementById('set-bannerHoliday').value.trim(),
+        bannerHoliday: document.getElementById('set-bannerHoliday').value.trim(),
+        executiveUids: document.getElementById('set-executiveUids').value.trim()
       };
+      
+
+
       uiShowLoading('กำลังบันทึก...');
       google.script.run.withSuccessHandler(function(res) {
         if (res.success) { applySettingsToUI(res.settings); Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: res.message }); }
