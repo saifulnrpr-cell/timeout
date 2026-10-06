@@ -2483,20 +2483,17 @@
               let customHtml = '';
               
               if (props.type === 'holiday') {
-                // ป้ายวันหยุด (สีแดง)
                 customHtml = `<div class="flex items-center justify-center w-full px-1 py-0.5 bg-rose-50 border border-rose-200 rounded text-rose-600 shadow-sm transition hover:bg-rose-100 cursor-pointer">
                                 <i class="fa-solid fa-gift text-[8px] mr-1"></i>
                                 <span class="text-[9px] font-bold truncate">${arg.event.title.replace('หยุด: ', '')}</span>
                               </div>`;
               } else if (props.type === 'work') {
-                // ป้ายคนมาทำงาน (แสดงแค่จำนวนคนแบบมินิมอล)
                 if (props.present && props.present.length > 0) {
                    customHtml = `<div class="flex items-center justify-between w-full px-1.5 py-0.5 bg-teal-50 border border-teal-200 rounded text-teal-700 shadow-sm transition hover:bg-teal-100 cursor-pointer">
                                    <i class="fa-solid fa-user-check text-[9px]"></i>
                                    <span class="text-[10px] font-bold">${props.present.length} คน</span>
                                  </div>`;
                 } else if (props.leave && props.leave.length > 0) {
-                   // กรณีไม่มีคนมา แต่มีคนลา
                    customHtml = `<div class="flex items-center justify-between w-full px-1.5 py-0.5 bg-amber-50 border border-amber-200 rounded text-amber-700 shadow-sm transition hover:bg-amber-100 cursor-pointer">
                                    <i class="fa-solid fa-plane text-[9px]"></i>
                                    <span class="text-[10px] font-bold">${props.leave.length} คน</span>
@@ -2544,6 +2541,12 @@
               }
             }
           });
+          
+          // โค้ด 3 บรรทัดด้านล่างนี้คือส่วนที่หายไปในครั้งที่แล้ว
+          calendarInstance.render();
+        }
+      }).getDashboardStats();
+    }
 
     function fetchMonthlyChartData() {
       const ym = document.getElementById('dash-month-select').value;
