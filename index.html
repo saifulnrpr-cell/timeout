@@ -337,19 +337,17 @@
             
             <!-- คอลัมน์ที่ 1: โดนัท และ กราฟ 7 วัน (ซ้ายสุด) -->
             <div class="lg:col-span-3 flex flex-col gap-6">
-
-               <!-- กราฟโดนัท 3D สลับข้อความตรงกลาง -->
-            <div class="neu-card p-5 lg:col-span-3 flex flex-col items-center relative">
-              <h3 class="text-sm font-bold text-slate-600 mb-2 w-full text-center">สัดส่วนวันนี้</h3>
-              <!-- วงกลมตรงกลางกราฟสำหรับเอฟเฟกต์ 3D -->
-              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-8">
-                <div class="w-28 h-28 rounded-full neu-pressed flex flex-col items-center justify-center transition-opacity duration-300" id="donutTextContainer">
-                  <span class="transition-opacity duration-300" id="donutCenterLabel">กำลังโหลด</span>
-                  <span class="text-5xl font-bold text-slate-700 transition-opacity duration-300" id="donutCenterValue">0</span>
+              <!-- กราฟโดนัท 3D สลับข้อความตรงกลาง -->
+              <div class="neu-card p-4 flex flex-col items-center relative flex-1 min-h-[220px]">
+                <h3 class="text-sm font-bold text-slate-600 mb-1 w-full text-center">สัดส่วนวันนี้</h3>
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-8">
+                  <div class="w-20 h-20 md:w-24 md:h-24 rounded-full neu-pressed flex flex-col items-center justify-center transition-opacity duration-300" id="donutTextContainer">
+                    <span class="transition-opacity duration-300" id="donutCenterLabel">กำลังโหลด</span>
+                    <span class="text-3xl md:text-4xl font-bold text-slate-700 transition-opacity duration-300" id="donutCenterValue">0</span>
+                  </div>
                 </div>
+                <div class="relative w-full h-40 md:h-48 z-10 mt-2"><canvas id="todayPieChart"></canvas></div>
               </div>
-              <div class="relative w-full flex-1 min-h-[200px] z-10"><canvas id="todayPieChart"></canvas></div>
-            </div>
 
               <!-- กราฟ 7 วันย้อนหลัง (เพิ่มใหม่เพื่อเติมเต็มช่องว่าง) -->
               <div class="neu-card p-4 flex flex-col flex-1 min-h-[200px]">
@@ -2351,31 +2349,32 @@
       document.getElementById('ind-leave').innerText = lv;
       document.getElementById('ind-absent').innerText = a;
 
-      const ctx = document.getElementById('individualChart').getContext('2d');
-      if (individualChartInstance) individualChartInstance.destroy();
-      individualChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels.length > 0 ? labels : ['ไม่มีข้อมูล'],
-          datasets: [{
-            label: val === 'all' ? 'ชั่วโมงทำงานรวมทั้งหน่วยงาน (ชม.)' : 'ชั่วโมงทำงาน (ชม.)',
-            data: dataHours.length > 0 ? dataHours : [0],
-            backgroundColor: bgColors.length > 0 ? bgColors : ['#e2e8f0'],
-            borderRadius: 6,
-            barPercentage: 0.5
-          }]
-        },
-        plugins: [shadowPlugin],
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { enabled: true, titleFont: {family: 'Kanit'}, bodyFont: {family: 'Kanit'} } },
-          scales: { 
-            y: { beginAtZero: true, grid: { borderDash: [4, 4] }, ticks: { font: { family: 'Kanit'} } },
-            x: { grid: { display: false }, ticks: { font: { family: 'Kanit'} } } 
-          }
-        }
-      });
-    }
+      // 2. เรนเดอร์กราฟโดนัท (Neumorphism 3D)
+          const ctxPie = document.getElementById('todayPieChart').getContext('2d');
+          if(myPieChart) myPieChart.destroy();
+          
+          // ตรวจสอบว่าข้อมูลเป็น 0 ทั้งหมดหรือไม่
+          const statValues = [res.stats.present - res.stats.late, res.stats.late, res.stats.leave, res.stats.absent];
+          const isAllZero = statValues.every(v => v === 0);
+
+          myPieChart = new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+              labels: isAllZero ? ['ยังไม่มีข้อมูล'] : ['มาตรงเวลา', 'มาสาย', 'ลางาน', 'ขาด/ยังไม่ลงเวลา'],
+              datasets: [{
+                data: isAllZero ? [1] : statValues,
+                backgroundColor: isAllZero ? ['#e2e8f0'] : [themePrimary, '#F59E0B', '#3B82F6', '#F43F5E'],
+                borderWidth: 4, 
+                borderColor: '#f1f5f9', // สีเดียวกับพื้นหลังเพื่อให้ดูกลืน
+                hoverOffset: 6
+              }]
+            },
+            plugins: [shadowPlugin],
+            options: { 
+              responsive: true, maintainAspectRatio: false, cutout: '75%', 
+              plugins: { legend: { display: false }, tooltip: { enabled: !isAllZero, bodyFont: {family: 'Kanit'} } } 
+            }
+          });
 
     function loadDashboardData() {
       uiShowLoading('อัปเดตแดชบอร์ด...');
@@ -2461,26 +2460,27 @@
                 timeText = 'ลางาน';
               }
 
-              // ใช้รูปภาพถ้ามี ถ้าไม่มีให้ใช้ไอคอนเดิม
+              // ขยายขนาดรูปโปรไฟล์เป็น w-10 h-10 พร้อมใส่กรอบให้ดูมีมิติ
               let avatarHtml = emp.picUrl 
-                ? `<img src="${emp.picUrl}" class="w-7 h-7 rounded-full object-cover shrink-0 shadow-sm border border-slate-200">`
-                : `<div class="w-7 h-7 rounded-full neu-btn flex justify-center items-center text-xs ${iconColor}">${icon}</div>`;
+                ? `<img src="${emp.picUrl}" class="w-10 h-10 rounded-full object-cover shrink-0 shadow-md border-2 border-white">`
+                : `<div class="w-10 h-10 rounded-full neu-pressed flex justify-center items-center text-sm ${iconColor} border-2 border-white">${icon}</div>`;
 
+              // ปรับขนาดฟอนต์ชื่อพนักงานให้ใหญ่ขึ้นและจัด Layout ใหม่
               listHtml += `
-                <div class="flex justify-between items-center p-2 rounded-lg hover:bg-slate-100 transition cursor-default">
-                  <div class="flex items-center gap-2">
+                <div class="flex justify-between items-center p-2.5 mb-2 rounded-xl hover:bg-white transition cursor-default border border-transparent hover:border-slate-200 hover:shadow-sm">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
                     ${avatarHtml}
-                    <div class="min-w-0">
-                      <div class="text-[11px] font-bold text-slate-700 truncate w-24" title="${emp.name}">${emp.name}</div>
-                      <div class="text-[9px] text-slate-400 truncate w-24">${emp.position}</div>
+                    <div class="min-w-0 flex-1">
+                      <div class="text-sm font-bold text-slate-800 truncate" title="${emp.name}">${emp.name}</div>
+                      <div class="text-[10px] text-slate-400 truncate">${emp.position}</div>
                     </div>
                   </div>
-                  <div class="text-right">
-                    <div class="text-[9px] font-bold px-1.5 py-0.5 rounded ${statusCss}">${timeText}</div>
+                  <div class="text-right shrink-0 ml-2">
+                    <div class="text-[10px] font-bold px-2.5 py-1.5 rounded-lg ${statusCss} shadow-sm">${timeText}</div>
                   </div>
                 </div>
               `;
-            }); // <------ เพิ่มบรรทัดนี้เข้ามา (ปีกกาปิดและวงเล็บปิดของ forEach)
+            });
             listContainer.innerHTML = listHtml;
           }
 
