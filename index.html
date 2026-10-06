@@ -224,7 +224,7 @@
     
     <aside class="w-full lg:w-64 h-auto lg:h-full bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col shrink-0 z-20 shadow-sm relative">
       <div class="p-5 border-b border-slate-100 flex items-center lg:flex-col lg:text-center gap-3 lg:gap-0 lg:space-y-3 theme-bg-gradient lg:bg-none text-white lg:text-slate-800">
-        <img id="navLogo" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Logo" class="w-12 h-12 lg:w-16 lg:h-16 rounded-xl object-cover bg-white p-1 shadow-sm shrink-0">
+        <img id="navLogo" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Logo" class="w-16 h-16 lg:w-28 lg:h-28 object-contain shrink-0 drop-shadow-sm">
         <div>
           <h1 id="navTitle" class="text-sm lg:text-base font-bold tracking-wide">ระบบจัดการเวลา</h1>
           <p id="navSubtitle" class="text-[10px] lg:text-xs text-white/80 lg:text-slate-500 mt-0.5">ปฏิบัติงานออนไลน์</p>
@@ -1011,14 +1011,25 @@
         document.getElementById('wifiScannerApp').classList.remove('hidden');
         if (isLineApp) document.getElementById('adminBackBtnContainer').classList.add('hidden');
         
-        // --- เพิ่มคำสั่งให้ดึงรูปพื้นหลังมาแสดงในโหมดสแกน ---
+        // 1. โหลดรูปล่าสุดที่จำไว้ในเครื่อง (Cache) ขึ้นมาโชว์ทันที (ใช้เวลา 0.1 วินาที)
+        const cachedBg = localStorage.getItem('CACHED_SCANNER_BG');
+        if (cachedBg) {
+          document.getElementById('wifiScannerApp').style.backgroundImage = `url('${cachedBg}')`;
+        }
+
+        // 2. แอบไปเช็กข้อมูลใหม่แบบหลังบ้าน เผื่อแอดมินเปลี่ยนรูปพื้นหลัง
         google.script.run.withSuccessHandler(function(s) {
           if (s && s.bannerScanner) {
-            document.getElementById('wifiScannerApp').style.backgroundImage = `url('${normalizeDriveUrl(s.bannerScanner)}')`;
+            const newBgUrl = normalizeDriveUrl(s.bannerScanner);
+            // ถ้าลิงก์รูปไม่ตรงกับที่จำไว้ ให้เปลี่ยนรูปและจำค่าใหม่
+            if (newBgUrl !== cachedBg) {
+              document.getElementById('wifiScannerApp').style.backgroundImage = `url('${newBgUrl}')`;
+              localStorage.setItem('CACHED_SCANNER_BG', newBgUrl);
+            }
           }
         }).getAppSettings();
-        // ----------------------------------------
 
+        // 3. เริ่มสแกน Wi-Fi ทันทีโดยไม่ต้องรอรูป
         startWifiAutoCheckIn();
       } else {
         document.getElementById('adminDashboardApp').classList.remove('hidden');
@@ -1470,7 +1481,7 @@
             '</div>' +
             // แก้ไขช่อง Input: เพิ่ม !w-full !mx-0 !block เพื่อบังคับจัดให้อยู่ตรงกลางเป๊ะๆ
             '<input id="swal-early-input" class="swal2-input !w-full !mx-0 !block text-center !mt-0 !font-kanit !py-4 !rounded-xl" style="font-size: 16px !important; box-sizing: border-box;" placeholder="หรือพิมพ์เหตุผลอื่นๆ... (บังคับ)">';
-            
+
           Swal.fire({
             title: '<span class="text-xl font-bold text-slate-800">ออกงานก่อนเวลา</span>',
             html: modalHtml,
