@@ -1453,15 +1453,24 @@
         }
 
         if (!res.success && res.requireEarlyReason) {
-          const modalHtml = '<p class="text-sm text-slate-700 mb-4">เวลางานปกติถึง <b class="text-rose-600">' + res.targetEndTime + ' น.</b><br>กรุณาเลือกเหตุผลด้านล่าง หรือพิมพ์ระบุเอง:</p>' +
+         const modalHtml = '<p class="text-sm text-slate-700 mb-4">เวลางานปกติถึง <b class="text-rose-600">' + res.targetEndTime + ' น.</b><br>กรุณาเลือกเหตุผลด้านล่าง หรือพิมพ์ระบุเอง:</p>' +
             '<div class="grid grid-cols-2 gap-2.5 mb-5">' +
-              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ไปราชการนอกสถานที่\'" class="py-3 px-2 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl border border-teal-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1"><i class="fa-solid fa-briefcase text-lg"></i> ไปราชการ</button>' +
-              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ออกตรวจเยี่ยมพื้นที่\'" class="py-3 px-2 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-xl border border-blue-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1"><i class="fa-solid fa-car text-lg"></i> ตรวจพื้นที่</button>' +
-              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'พบแพทย์/ป่วย\'" class="py-3 px-2 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-xl border border-rose-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1"><i class="fa-solid fa-house-medical text-lg"></i> พบแพทย์/ป่วย</button>' +
-              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'มีธุระจำเป็นเร่งด่วน\'" class="py-3 px-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl border border-amber-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1"><i class="fa-solid fa-person-running text-lg"></i> ธุระด่วน</button>' +
+              // 1. ธนาคาร (สี Teal)
+              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ทำธุรกรรมธนาคาร\'" class="py-3 px-2 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl border border-teal-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-building-columns text-xl"></i> ไปธนาคาร</button>' +
+              // 2. ส่งเอกสาร (สี Blue)
+              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ส่งเอกสาร อบจ. / กอง\'" class="py-3 px-2 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-xl border border-blue-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-folder-open text-xl"></i> ส่งเอกสาร</button>' +
+              // 3. ส่ง LAB / เครื่องมือ (สี Purple)
+              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ส่ง LAB & เครื่องมือแพทย์\'" class="py-3 px-2 bg-purple-50 hover:bg-purple-100 text-purple-800 rounded-xl border border-purple-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-vials text-xl"></i> ส่ง LAB&เครื่องมือ</button>' +
+              // 4. ลงพื้นที่ (สี Emerald)
+              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ลงพื้นที่สนับสนุนเจ้าหน้าที่\'" class="py-3 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl border border-emerald-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-map-location-dot text-xl"></i> ลงพื้นที่</button>' +
+              // 5. พบแพทย์/ป่วย (สี Rose)
+              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'พบแพทย์/ป่วย\'" class="py-3 px-2 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-xl border border-rose-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-stethoscope text-xl"></i> พบแพทย์/ป่วย</button>' +
+              // 6. ธุระด่วน (สี Amber)
+              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'มีธุระจำเป็นเร่งด่วน\'" class="py-3 px-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl border border-amber-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-person-running text-xl"></i> ธุระด่วน</button>' +
             '</div>' +
-            '<input id="swal-early-input" class="swal2-input !mt-0 !font-kanit !py-4 !rounded-xl" style="font-size: 16px !important;" placeholder="หรือพิมพ์เหตุผลอื่นๆ... (บังคับ)">';
-
+            // แก้ไขช่อง Input: เพิ่ม !w-full !mx-0 !block เพื่อบังคับจัดให้อยู่ตรงกลางเป๊ะๆ
+            '<input id="swal-early-input" class="swal2-input !w-full !mx-0 !block text-center !mt-0 !font-kanit !py-4 !rounded-xl" style="font-size: 16px !important; box-sizing: border-box;" placeholder="หรือพิมพ์เหตุผลอื่นๆ... (บังคับ)">';
+            
           Swal.fire({
             title: '<span class="text-xl font-bold text-slate-800">ออกงานก่อนเวลา</span>',
             html: modalHtml,
