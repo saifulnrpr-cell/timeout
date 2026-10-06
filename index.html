@@ -1799,14 +1799,9 @@
         bannerLeave: document.getElementById('set-bannerLeave').value.trim(),
         bannerSummary: document.getElementById('set-bannerSummary').value.trim(),
         bannerHoliday: document.getElementById('set-bannerHoliday').value.trim(),
-        bannerHoliday: document.getElementById('set-bannerHoliday').value.trim(),
-        executiveUids: document.getElementById('set-executiveUids').value.trim()
-        bannerHoliday: document.getElementById('set-bannerHoliday').value.trim(),
         executiveUids: document.getElementById('set-executiveUids').value.trim(),
         bannerExecutive: document.getElementById('set-bannerExecutive').value.trim()
       };
-      
-
 
       uiShowLoading('กำลังบันทึก...');
       google.script.run.withSuccessHandler(function(res) {
