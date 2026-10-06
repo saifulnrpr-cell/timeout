@@ -338,20 +338,26 @@
             <!-- คอลัมน์ที่ 1: โดนัท และ กราฟ 7 วัน (ซ้ายสุด) -->
             <div class="lg:col-span-3 flex flex-col gap-6">
               <!-- กราฟโดนัท 3D สลับข้อความตรงกลาง -->
-              <div class="neu-card p-4 flex flex-col items-center relative flex-1 min-h-[220px]">
-                <h3 class="text-sm font-bold text-slate-600 mb-1 w-full text-center">สัดส่วนวันนี้</h3>
-                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-8">
-                  <div class="w-20 h-20 md:w-24 md:h-24 rounded-full neu-pressed flex flex-col items-center justify-center transition-opacity duration-300" id="donutTextContainer">
-                    <span class="transition-opacity duration-300" id="donutCenterLabel">กำลังโหลด</span>
-                    <span class="text-3xl md:text-4xl font-bold text-slate-700 transition-opacity duration-300" id="donutCenterValue">0</span>
+              <div class="neu-card p-5 flex flex-col items-center relative flex-1 min-h-[220px]">
+                <h3 class="text-sm font-bold text-slate-600 w-full text-center mb-2">สัดส่วนวันนี้</h3>
+                <!-- จับมัดรวม Canvas และวงกลมให้อยู่กล่องเดียวกันเพื่อล็อกให้อยู่กึ่งกลางเป๊ะ -->
+                <div class="relative w-full flex-1 flex items-center justify-center min-h-[150px]">
+                  <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
+                    <div class="w-20 h-20 md:w-24 md:h-24 rounded-full neu-pressed flex flex-col items-center justify-center transition-opacity duration-300 shadow-inner" id="donutTextContainer">
+                      <span class="transition-opacity duration-300 text-[10px] font-bold text-slate-500" id="donutCenterLabel">กำลังโหลด</span>
+                      <span class="text-3xl md:text-4xl font-black text-slate-700 transition-opacity duration-300" id="donutCenterValue">0</span>
+                    </div>
                   </div>
+                  <canvas id="todayPieChart" class="relative z-10"></canvas>
                 </div>
-                <div class="relative w-full h-40 md:h-48 z-10 mt-2"><canvas id="todayPieChart"></canvas></div>
               </div>
 
-              <!-- กราฟ 7 วันย้อนหลัง (เพิ่มใหม่เพื่อเติมเต็มช่องว่าง) -->
-              <div class="neu-card p-4 flex flex-col flex-1 min-h-[200px]">
-                <h3 class="text-xs font-bold text-slate-600 mb-2 text-center">แนวโน้มมาทำงาน (7 วันล่าสุด)</h3>
+              <!-- กราฟ 7 วันย้อนหลัง (Area Chart แบบแรเงา) -->
+              <div class="neu-card p-5 flex flex-col flex-1 min-h-[220px]">
+                <div class="flex justify-between items-center mb-3">
+                  <h3 class="text-xs font-bold text-slate-500 tracking-wider uppercase">แนวโน้ม (7 วันล่าสุด)</h3>
+                  <div class="w-3 h-3 bg-teal-500 rounded-sm shadow-sm"></div>
+                </div>
                 <div class="relative w-full flex-1"><canvas id="weeklyTrendChart"></canvas></div>
               </div>
             </div>
@@ -448,7 +454,7 @@
           
           <div id="printableArea" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
             <div class="flex items-center justify-center gap-4 border-b pb-4 mb-6">
-              <img id="reportLogo" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="w-15 h-15 object-contain">
+              <img id="reportLogo" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="w-14 h-14 object-contain">
               <div class="text-center">
                 <h2 class="text-2xl font-bold text-slate-800">รายงานสรุปเวลาปฏิบัติงานรายบุคคล</h2>
                 <p id="reportPeriodText" class="text-slate-600 mt-0.5">ประจำเดือน -</p>
@@ -2408,7 +2414,6 @@
           const ctxPie = document.getElementById('todayPieChart').getContext('2d');
           if(myPieChart) myPieChart.destroy();
           
-          // ตรวจสอบว่าข้อมูลเป็น 0 ทั้งหมดหรือไม่
           const statValues = [res.stats.present - res.stats.late, res.stats.late, res.stats.leave, res.stats.absent];
           const isAllZero = statValues.every(v => v === 0);
 
@@ -2420,18 +2425,67 @@
                 data: isAllZero ? [1] : statValues,
                 backgroundColor: isAllZero ? ['#e2e8f0'] : [themePrimary, '#F59E0B', '#3B82F6', '#F43F5E'],
                 borderWidth: 4, 
-                borderColor: '#f1f5f9', // สีเดียวกับพื้นหลังเพื่อให้ดูกลืน
+                borderColor: '#f1f5f9',
                 hoverOffset: 6
               }]
             },
             plugins: [shadowPlugin],
             options: { 
-              responsive: true, maintainAspectRatio: false, cutout: '75%', 
-              plugins: { legend: { display: false }, tooltip: { enabled: !isAllZero, bodyFont: {family: 'Kanit'} } } 
+              responsive: true, maintainAspectRatio: false, cutout: '76%', 
+              plugins: { legend: { display: false }, tooltip: { enabled: !isAllZero, bodyFont: {family: 'Kanit'} } },
+              layout: { padding: 10 } // เพิ่มระยะห่างให้กราฟไม่ชิดขอบเกินไป ช่วยให้อยู่กึ่งกลางขึ้น
             }
           });
-          // ---------------------------------------------
 
+          // --- 3. เรนเดอร์กราฟ 7 วัน (Area Chart สไตล์รูปตัวอย่าง) ---
+          const ctxWeekly = document.getElementById('weeklyTrendChart').getContext('2d');
+          
+          // สร้างสี Gradient พื้นหลังให้กราฟแรเงาสวยงาม
+          let gradientFill = ctxWeekly.createLinearGradient(0, 0, 0, 180);
+          gradientFill.addColorStop(0, 'rgba(13, 148, 136, 0.6)'); // สีเขียว Teal โปร่งแสงด้านบน
+          gradientFill.addColorStop(1, 'rgba(13, 148, 136, 0.0)'); // ใสกลืนไปกับพื้นหลังด้านล่าง
+
+          if (window.myWeeklyChart) window.myWeeklyChart.destroy();
+          window.myWeeklyChart = new Chart(ctxWeekly, {
+            type: 'line',
+            data: {
+              labels: res.weeklyData.labels,
+              datasets: [{
+                label: 'มาทำงาน (คน)',
+                data: res.weeklyData.presentCounts,
+                backgroundColor: gradientFill,
+                borderColor: themePrimary, // เส้นขอบ
+                borderWidth: 2,
+                pointBackgroundColor: '#1e293b', // จุดสีดำเข้มแบบรูปตัวอย่าง
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 1.5,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true, // เปิด Fill เพื่อแรเงาให้เป็น Area Chart
+                tension: 0 // กำหนดเป็น 0 เพื่อให้เส้นตรงเหลี่ยมเป๊ะแบบในรูป
+              }]
+            },
+            options: {
+              responsive: true, maintainAspectRatio: false,
+              plugins: { 
+                legend: { display: false }, 
+                tooltip: { bodyFont: {family: 'Kanit'}, titleFont: {family: 'Kanit'} } 
+              },
+              scales: {
+                x: { 
+                  grid: { display: true, color: '#e2e8f0', drawBorder: false }, // โชว์แค่เส้นตารางแนวตั้ง
+                  ticks: { font: { size: 10, family: 'Kanit' }, color: '#64748b' } 
+                },
+                y: { 
+                  beginAtZero: true, 
+                  grid: { display: false }, // ซ่อนเส้นตารางแนวนอนแบบในรูปเป๊ะ
+                  ticks: { display: false } // ซ่อนตัวเลขแกน Y เพื่อความมินิมอล
+                }
+              },
+              interaction: { intersect: false, mode: 'index' }
+            }
+          });
+          
           // 3. สร้างรายชื่อพนักงานวันนี้ (Neu Pressed Scroll)
           const listContainer = document.getElementById('todayEmployeeList');
           document.getElementById('todayBadgeLabel').innerText = new Date().toLocaleTimeString('th-TH').slice(0,5) + ' น.';
