@@ -337,17 +337,19 @@
             
             <!-- คอลัมน์ที่ 1: โดนัท และ กราฟ 7 วัน (ซ้ายสุด) -->
             <div class="lg:col-span-3 flex flex-col gap-6">
-              <!-- กราฟโดนัท 3D สลับข้อความตรงกลาง -->
-              <div class="neu-card p-4 flex flex-col items-center relative flex-1 min-h-[220px]">
-                <h3 class="text-sm font-bold text-slate-600 mb-1 w-full text-center">สัดส่วนวันนี้</h3>
-                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-8">
-                  <div class="w-20 h-20 md:w-24 md:h-24 rounded-full neu-pressed flex flex-col items-center justify-center transition-opacity duration-300" id="donutTextContainer">
-                    <span class="transition-opacity duration-300" id="donutCenterLabel">กำลังโหลด</span>
-                    <span class="text-3xl md:text-4xl font-bold text-slate-700 transition-opacity duration-300" id="donutCenterValue">0</span>
-                  </div>
+
+               <!-- กราฟโดนัท 3D สลับข้อความตรงกลาง -->
+            <div class="neu-card p-5 lg:col-span-3 flex flex-col items-center relative">
+              <h3 class="text-sm font-bold text-slate-600 mb-2 w-full text-center">สัดส่วนวันนี้</h3>
+              <!-- วงกลมตรงกลางกราฟสำหรับเอฟเฟกต์ 3D -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-8">
+                <div class="w-28 h-28 rounded-full neu-pressed flex flex-col items-center justify-center transition-opacity duration-300" id="donutTextContainer">
+                  <span class="transition-opacity duration-300" id="donutCenterLabel">กำลังโหลด</span>
+                  <span class="text-5xl font-bold text-slate-700 transition-opacity duration-300" id="donutCenterValue">0</span>
                 </div>
-                <div class="relative w-full flex-1 z-10"><canvas id="todayPieChart"></canvas></div>
               </div>
+              <div class="relative w-full flex-1 min-h-[200px] z-10"><canvas id="todayPieChart"></canvas></div>
+            </div>
 
               <!-- กราฟ 7 วันย้อนหลัง (เพิ่มใหม่เพื่อเติมเต็มช่องว่าง) -->
               <div class="neu-card p-4 flex flex-col flex-1 min-h-[200px]">
