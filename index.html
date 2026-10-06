@@ -1006,6 +1006,15 @@
         document.getElementById('leaveFormApp').classList.add('hidden');
         document.getElementById('wifiScannerApp').classList.remove('hidden');
         if (isLineApp) document.getElementById('adminBackBtnContainer').classList.add('hidden');
+        
+        // --- เพิ่มคำสั่งให้ดึงรูปพื้นหลังมาแสดงในโหมดสแกน ---
+        google.script.run.withSuccessHandler(function(s) {
+          if (s && s.bannerScanner) {
+            document.getElementById('wifiScannerApp').style.backgroundImage = `url('${normalizeDriveUrl(s.bannerScanner)}')`;
+          }
+        }).getAppSettings();
+        // ----------------------------------------
+
         startWifiAutoCheckIn();
       } else {
         document.getElementById('adminDashboardApp').classList.remove('hidden');
