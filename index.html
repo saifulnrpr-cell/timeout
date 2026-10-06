@@ -2349,32 +2349,31 @@
       document.getElementById('ind-leave').innerText = lv;
       document.getElementById('ind-absent').innerText = a;
 
-      // 2. เรนเดอร์กราฟโดนัท (Neumorphism 3D)
-          const ctxPie = document.getElementById('todayPieChart').getContext('2d');
-          if(myPieChart) myPieChart.destroy();
-          
-          // ตรวจสอบว่าข้อมูลเป็น 0 ทั้งหมดหรือไม่
-          const statValues = [res.stats.present - res.stats.late, res.stats.late, res.stats.leave, res.stats.absent];
-          const isAllZero = statValues.every(v => v === 0);
-
-          myPieChart = new Chart(ctxPie, {
-            type: 'doughnut',
-            data: {
-              labels: isAllZero ? ['ยังไม่มีข้อมูล'] : ['มาตรงเวลา', 'มาสาย', 'ลางาน', 'ขาด/ยังไม่ลงเวลา'],
-              datasets: [{
-                data: isAllZero ? [1] : statValues,
-                backgroundColor: isAllZero ? ['#e2e8f0'] : [themePrimary, '#F59E0B', '#3B82F6', '#F43F5E'],
-                borderWidth: 4, 
-                borderColor: '#f1f5f9', // สีเดียวกับพื้นหลังเพื่อให้ดูกลืน
-                hoverOffset: 6
-              }]
-            },
-            plugins: [shadowPlugin],
-            options: { 
-              responsive: true, maintainAspectRatio: false, cutout: '75%', 
-              plugins: { legend: { display: false }, tooltip: { enabled: !isAllZero, bodyFont: {family: 'Kanit'} } } 
-            }
-          });
+      const ctx = document.getElementById('individualChart').getContext('2d');
+      if (individualChartInstance) individualChartInstance.destroy();
+      individualChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels.length > 0 ? labels : ['ไม่มีข้อมูล'],
+          datasets: [{
+            label: val === 'all' ? 'ชั่วโมงทำงานรวมทั้งหน่วยงาน (ชม.)' : 'ชั่วโมงทำงาน (ชม.)',
+            data: dataHours.length > 0 ? dataHours : [0],
+            backgroundColor: bgColors.length > 0 ? bgColors : ['#e2e8f0'],
+            borderRadius: 6,
+            barPercentage: 0.5
+          }]
+        },
+        plugins: [shadowPlugin],
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { enabled: true, titleFont: {family: 'Kanit'}, bodyFont: {family: 'Kanit'} } },
+          scales: { 
+            y: { beginAtZero: true, grid: { borderDash: [4, 4] }, ticks: { font: { family: 'Kanit'} } },
+            x: { grid: { display: false }, ticks: { font: { family: 'Kanit'} } } 
+          }
+        }
+      });
+    }
 
     function loadDashboardData() {
       uiShowLoading('อัปเดตแดชบอร์ด...');
@@ -2405,33 +2404,32 @@
           // เริ่มฟังก์ชันสลับข้อความกราฟ
           startDonutCycle(res.stats);
 
-          // --- เพิ่มใหม่: เรนเดอร์กราฟ 7 วัน (Weekly Trend) ---
-          const ctxWeekly = document.getElementById('weeklyTrendChart');
-          if (ctxWeekly) {
-            if (window.myWeeklyChart) window.myWeeklyChart.destroy();
-            window.myWeeklyChart = new Chart(ctxWeekly.getContext('2d'), {
-              type: 'bar',
-              data: {
-                labels: res.weeklyData.labels,
-                datasets: [{
-                  label: 'มาทำงาน (คน)',
-                  data: res.weeklyData.presentCounts,
-                  backgroundColor: themePrimary,
-                  borderRadius: 6,
-                  barPercentage: 0.5
-                }]
-              },
-              plugins: [shadowPlugin],
-              options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { bodyFont: {family: 'Kanit'}, titleFont: {family: 'Kanit'} } },
-                scales: {
-                  x: { grid: { display: false }, ticks: { font: { size: 9, family: 'Kanit' }, color: '#94a3b8' } },
-                  y: { beginAtZero: true, grid: { borderDash: [2, 2], color: '#f1f5f9' }, ticks: { font: { size: 9, family: 'Kanit' }, color: '#94a3b8', stepSize: 1 } }
-                }
-              }
-            });
-          }
+          // 2. เรนเดอร์กราฟโดนัท (Neumorphism 3D)
+          const ctxPie = document.getElementById('todayPieChart').getContext('2d');
+          if(myPieChart) myPieChart.destroy();
+          
+          // ตรวจสอบว่าข้อมูลเป็น 0 ทั้งหมดหรือไม่
+          const statValues = [res.stats.present - res.stats.late, res.stats.late, res.stats.leave, res.stats.absent];
+          const isAllZero = statValues.every(v => v === 0);
+
+          myPieChart = new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+              labels: isAllZero ? ['ยังไม่มีข้อมูล'] : ['มาตรงเวลา', 'มาสาย', 'ลางาน', 'ขาด/ยังไม่ลงเวลา'],
+              datasets: [{
+                data: isAllZero ? [1] : statValues,
+                backgroundColor: isAllZero ? ['#e2e8f0'] : [themePrimary, '#F59E0B', '#3B82F6', '#F43F5E'],
+                borderWidth: 4, 
+                borderColor: '#f1f5f9', // สีเดียวกับพื้นหลังเพื่อให้ดูกลืน
+                hoverOffset: 6
+              }]
+            },
+            plugins: [shadowPlugin],
+            options: { 
+              responsive: true, maintainAspectRatio: false, cutout: '75%', 
+              plugins: { legend: { display: false }, tooltip: { enabled: !isAllZero, bodyFont: {family: 'Kanit'} } } 
+            }
+          });
           // ---------------------------------------------
 
           // 3. สร้างรายชื่อพนักงานวันนี้ (Neu Pressed Scroll)
