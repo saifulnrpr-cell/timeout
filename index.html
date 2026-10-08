@@ -747,6 +747,20 @@
                 </div>
                 <div class="md:col-span-4"><button type="button" onclick="fillAdminCurrentPublicIp()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow transition text-sm"><i class="fa-solid fa-globe mr-2"></i> ดึงค่าปัจจุบันใส่ช่อง</button></div>
               </div>
+
+              <!-- เพิ่มตั้งค่า GPS ตรงนี้ -->
+              <div class="md:col-span-12 border-t border-teal-200 pt-4 mt-2">
+                <span class="text-sm font-semibold text-slate-700 block mb-3"><i class="fa-solid fa-map-location-dot text-teal-600 mr-1.5"></i> ระบบพิกัด GPS สำรอง (สลับอัตโนมัติเมื่อ Wi-Fi ไม่ตรง)</span>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                  <div><label class="block text-xs font-semibold text-slate-600 mb-1">ละติจูด (Latitude)</label><input type="text" id="set-officeLat" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none theme-border font-mono"></div>
+                  <div><label class="block text-xs font-semibold text-slate-600 mb-1">ลองจิจูด (Longitude)</label><input type="text" id="set-officeLng" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none theme-border font-mono"></div>
+                  <div><label class="block text-xs font-semibold text-slate-600 mb-1">รัศมีอนุญาต (เมตร)</label><input type="number" id="set-officeRadius" placeholder="เช่น 50, 100" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none theme-border font-mono"></div>
+                </div>
+                <div class="mt-3 flex items-center gap-3">
+                  <button type="button" onclick="getAdminGpsLocation()" class="bg-slate-700 hover:bg-slate-800 text-white font-medium py-2 px-4 rounded-xl shadow transition text-xs"><i class="fa-solid fa-location-crosshairs mr-1.5"></i> ดึงพิกัด GPS ปัจจุบันใส่ช่อง</button>
+                  <span class="text-[10px] text-slate-500">* ปล่อยว่างไว้ หากไม่ต้องการใช้ GPS</span>
+                </div>
+              </div>
             </div>
 
             <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200 p-6">
@@ -1475,22 +1489,47 @@
       executeIpClockInOut('');
     }
 
-    function executeIpClockInOut(earlyReasonText) {
+    function executeIpClockInOut(earlyReasonText, lat = null, lng = null) {
       google.script.run.withSuccessHandler(function(res) {
         
+        // 1. ตรวจสอบว่าพนักงานลงทะเบียนหรือยัง
         if (!res.success && res.needRegister) {
           updateWifiVisual('warning', 'ยังไม่ได้ผูกบัญชี', 'กรุณากลับไปพิมพ์เลขบัตร 13 หลักในช่องแชต LINE');
           return;
         }
 
-        if (!res.success && res.wrongIp === false && !res.requireEarlyReason) {
+        // 2. ตรวจสอบกรณี IP ไม่ตรง แล้วต้องสลับไปใช้ GPS สำรอง (ถ้าระบบเปิดไว้)
+        if (!res.success && res.wrongIp) {
+           if (res.askGps) {
+              updateWifiVisual('scanning', 'กำลังค้นหาพิกัด GPS...', 'กำลังสลับไปใช้ระบบสำรอง');
+              if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                  function(pos) {
+                    // ได้ GPS มาแล้ว ให้เรียกตัวเองซ้ำพร้อมส่งพิกัดไปหลังบ้าน
+                    executeIpClockInOut(earlyReasonText, pos.coords.latitude, pos.coords.longitude);
+                  },
+                  function(error) {
+                    updateWifiVisual('error', 'ไม่สามารถระบุตำแหน่งได้', 'กรุณาเปิด GPS และอนุญาตสิทธิ์ (Allow)');
+                    document.getElementById('wifiRetryBox').classList.remove('hidden');
+                  },
+                  { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                );
+              } else {
+                updateWifiVisual('error', 'อุปกรณ์ไม่รองรับ GPS', 'ไม่สามารถใช้งานระบบสำรองได้');
+                document.getElementById('wifiRetryBox').classList.remove('hidden');
+              }
+              return;
+           }
+           
+           // หากคำนวณ GPS แล้วเกินระยะ หรือ ไม่ได้ตั้งค่า GPS ไว้
            updateWifiVisual('error', 'ไม่สามารถลงเวลาได้', res.message);
-           document.getElementById('officeIpStatusText').innerText = 'ไม่อนุญาตให้สแกน';
+           document.getElementById('officeIpStatusText').innerText = res.outOfRange ? `ห่าง ${res.distance} ม.` : 'ไม่อนุญาตให้สแกน';
            document.getElementById('officeIpStatusText').className = 'font-bold text-rose-600';
            document.getElementById('wifiRetryBox').classList.remove('hidden');
            return;
         }
 
+        // 3. แจ้งเตือนออกงานก่อนเวลา (ปรับดีไซน์ใหม่)
         if (!res.success && res.requireEarlyReason) {
          const modalHtml = '<p class="text-sm text-slate-700 mb-4">เวลางานปกติถึง <b class="text-rose-600">' + res.targetEndTime + ' น.</b><br>กรุณาเลือกเหตุผลด้านล่าง หรือพิมพ์ระบุเอง:</p>' +
             '<div class="grid grid-cols-2 gap-2.5 mb-5">' +
@@ -1507,7 +1546,7 @@
               // 6. ธุระด่วน (สี Amber)
               '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'มีธุระจำเป็นเร่งด่วน\'" class="py-3 px-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl border border-amber-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-person-running text-xl"></i> ธุระด่วน</button>' +
             '</div>' +
-            // แก้ไขช่อง Input: เพิ่ม !w-full !mx-0 !block เพื่อบังคับจัดให้อยู่ตรงกลางเป๊ะๆ
+            // แก้ไขช่อง Input ให้กึ่งกลางและเต็มช่อง
             '<input id="swal-early-input" class="swal2-input !w-full !mx-0 !block text-center !mt-0 !font-kanit !py-4 !rounded-xl" style="font-size: 16px !important; box-sizing: border-box;" placeholder="หรือพิมพ์เหตุผลอื่นๆ... (บังคับ)">';
 
           Swal.fire({
@@ -1534,17 +1573,14 @@
           return;
         }
 
+        // 4. บันทึกข้อมูลสำเร็จ (โชว์สถานะเครือข่าย หรือ GPS)
         if (res.success) {
           updateWifiVisual('success', 'บันทึก' + res.actionType + 'สำเร็จ!', res.empName + ' • ' + res.time + ' น.');
-          document.getElementById('officeIpStatusText').innerText = '✅ ตรงกับ Wi-Fi หน่วยงาน';
+          document.getElementById('officeIpStatusText').innerText = res.clientIp ? `✅ เครือข่ายตรง` : `📍 GPS (ในระยะ)`;
           document.getElementById('officeIpStatusText').className = 'font-bold text-emerald-600';
           setTimeout(function() { closeScannerWindow(); }, 1500);
         } else {
           updateWifiVisual('error', 'ไม่สามารถบันทึกเวลาได้', res.message);
-          if (res.wrongIp) {
-            document.getElementById('officeIpStatusText').innerText = '❌ ไม่ใช่ Wi-Fi หน่วยงาน';
-            document.getElementById('officeIpStatusText').className = 'font-bold text-rose-600';
-          }
           document.getElementById('wifiRetryBox').classList.remove('hidden');
         }
       }).submitIpClockInOut({
@@ -1552,10 +1588,11 @@
         idCard: currentSavedIdCard || '',
         clientIp: detectedPublicIp,
         earlyReason: earlyReasonText,
-        pictureUrl: localStorage.getItem('ATTENDANCE_LINE_PIC') || ''
+        pictureUrl: localStorage.getItem('ATTENDANCE_LINE_PIC') || '',
+        lat: lat, // ส่งพิกัด Latitude ให้หลังบ้าน
+        lng: lng  // ส่งพิกัด Longitude ให้หลังบ้าน
       });
     }
-
     function updateWifiVisual(state, title, subtitle) {
       const box = document.getElementById('wifiScanIconBox');
       const icon = document.getElementById('wifiScanIcon');
@@ -1826,7 +1863,7 @@
       document.getElementById('set-adminPassword').value = adminSystemPassword;
       document.getElementById('set-blockWeekend').checked = (String(s.blockWeekend) !== 'false');
       document.getElementById('set-enableIpCheck').checked = (String(s.enableIpCheck) !== 'false');
-      const fields = [ 'appTitle', 'appSubtitle', 'appLogo', 'bgWatermark', 'bgOpacity', 'lineToken', 'botBasicId', 'botQrUrl', 'officeIps', 'bannerPR', 'bannerCheckIn', 'bannerCheckOut', 'bannerLeave', 'bannerSummary', 'bannerHoliday', 'executiveUids', 'bannerExecutive', 'bannerScanner' ];
+      const fields = [ 'appTitle', 'appSubtitle', 'appLogo', 'bgWatermark', 'bgOpacity', 'lineToken', 'botBasicId', 'botQrUrl', 'officeIps', 'bannerPR', 'bannerCheckIn', 'bannerCheckOut', 'bannerLeave', 'bannerSummary', 'bannerHoliday', 'executiveUids', 'bannerExecutive', 'bannerScanner', 'officeLat', 'officeLng', 'officeRadius' ];
       fields.forEach(function(k) {
         const el = document.getElementById('set-' + k);
         if (el && s[k] !== undefined) el.value = s[k];
@@ -1887,7 +1924,10 @@
         bannerExecutive: document.getElementById('set-bannerExecutive').value.trim(),
         executiveUids: document.getElementById('set-executiveUids').value.trim(),
         bannerExecutive: document.getElementById('set-bannerExecutive').value.trim(),
-        bannerScanner: document.getElementById('set-bannerScanner').value.trim()
+        bannerScanner: document.getElementById('set-bannerScanner').value.trim(),
+        officeLat: document.getElementById('set-officeLat').value.trim(),
+        officeLng: document.getElementById('set-officeLng').value.trim(),
+        officeRadius: document.getElementById('set-officeRadius').value.trim()
       };
       
 
@@ -2696,6 +2736,22 @@
       });
     }
     
+    function getAdminGpsLocation() {
+      uiShowLoading('กำลังค้นหาพิกัด GPS...');
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(pos) {
+            Swal.close();
+            document.getElementById('set-officeLat').value = pos.coords.latitude.toFixed(6);
+            document.getElementById('set-officeLng').value = pos.coords.longitude.toFixed(6);
+            if(!document.getElementById('set-officeRadius').value) document.getElementById('set-officeRadius').value = "50";
+            Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'ดึงพิกัดแล้ว กรุณากดบันทึกการตั้งค่าด้วยครับ' });
+          },
+          function() { Swal.close(); Swal.fire({ icon: 'error', title: 'ไม่สามารถดึงพิกัดได้', text: 'กรุณาเปิด GPS และอนุญาตสิทธิ์บนเบราว์เซอร์' }); },
+          { enableHighAccuracy: true }
+        );
+      }
+    }
 
   </script>
 </body>
