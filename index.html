@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8">
@@ -710,26 +710,24 @@
             </div>
           </div>
 
-          <!-- ตั้งค่าแจ้งเตือนผู้บริหาร -->
-            <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border-2 border-purple-500/40 p-6">
-              <div class="flex flex-col md:flex-row md:items-center justify-between border-b pb-3 mb-4 gap-3">
-                <div>
-                  <h2 class="text-lg font-semibold text-purple-700 flex items-center"><i class="fa-solid fa-user-tie mr-2"></i> 4. แจ้งเตือนสรุปยอดรายวันสำหรับผู้บริหาร</h2>
-                  <p class="text-xs text-slate-500 mt-0.5">ส่งรายงานเวลา 09:00 น. และ 17:30 น. อัตโนมัติ (พร้อมกับการแจ้งเตือนพนักงาน)</p>
+          <div class="space-y-4">
+                <!-- เพิ่มช่องใส่ Token ของบอทผู้บริหาร -->
+                <div class="p-4 bg-purple-50/50 rounded-xl border border-purple-200">
+                  <label class="block text-sm font-semibold text-purple-900 mb-1">Channel Access Token (บอทผู้บริหาร)</label>
+                  <input type="password" id="set-executiveToken" placeholder="วาง Token ของบอทผู้บริหารที่นี่" class="w-full px-3.5 py-2.5 bg-white border border-purple-300 rounded-xl font-mono text-xs focus:outline-none focus:ring-2 focus:ring-purple-400">
+                  <p class="text-[10px] text-purple-600 mt-1.5"><i class="fa-solid fa-circle-info mr-1"></i> หากเว้นว่างไว้ ระบบจะใช้บอทของพนักงานส่งรายงานแทน</p>
                 </div>
-              </div>
-              <div class="space-y-4">
+                
                 <div>
                   <label class="block text-sm font-semibold text-slate-700 mb-1">LINE UID ของผู้บริหาร (ใส่ได้หลายคน คั่นด้วยลูกน้ำ , )</label>
                   <input type="text" id="set-executiveUids" placeholder="เช่น U1234567890abcdef..., U0987654321..." class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl font-mono text-sm focus:outline-none theme-border">
-                  <p class="text-[10px] text-slate-500 mt-1">* หมายเหตุ: ผู้บริหารต้องแอด LINE Bot ของระบบไว้ด้วยจึงจะได้รับข้อความ</p>
+                  <p class="text-[10px] text-slate-500 mt-1">* หมายเหตุ: ผู้บริหารต้องแอด LINE Bot ตาม Token ที่ตั้งไว้ด้านบน จึงจะได้รับข้อความ</p>
                 </div>
                 <div class="flex gap-2 pt-2">
-                  <button type="button" onclick="handleTestExecutive('MORNING')" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold py-2.5 px-4 rounded-xl shadow transition"><i class="fa-solid fa-sun mr-1"></i> ทดสอบส่งสรุป 09:00</button>
-                  <button type="button" onclick="handleTestExecutive('EVENING')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-2.5 px-4 rounded-xl shadow transition"><i class="fa-solid fa-moon mr-1"></i> ทดสอบส่งสรุป 17:30</button>
+                  <button type="button" onclick="handleTestExecutive('MORNING')" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold py-3 px-4 rounded-xl shadow transition"><i class="fa-solid fa-sun mr-1"></i> ทดสอบส่งสรุป 09:00</button>
+                  <button type="button" onclick="handleTestExecutive('EVENING')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold py-3 px-4 rounded-xl shadow transition"><i class="fa-solid fa-moon mr-1"></i> ทดสอบส่งสรุป 17:30</button>
                 </div>
               </div>
-            </div>
 
           <form id="settingsForm" onsubmit="handleSaveSettings(event)" class="space-y-6">
             <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border-2 border-teal-500/50 p-6">
@@ -1863,7 +1861,7 @@
       document.getElementById('set-adminPassword').value = adminSystemPassword;
       document.getElementById('set-blockWeekend').checked = (String(s.blockWeekend) !== 'false');
       document.getElementById('set-enableIpCheck').checked = (String(s.enableIpCheck) !== 'false');
-      const fields = [ 'appTitle', 'appSubtitle', 'appLogo', 'bgWatermark', 'bgOpacity', 'lineToken', 'botBasicId', 'botQrUrl', 'officeIps', 'bannerPR', 'bannerCheckIn', 'bannerCheckOut', 'bannerLeave', 'bannerSummary', 'bannerHoliday', 'executiveUids', 'bannerExecutive', 'bannerScanner', 'officeLat', 'officeLng', 'officeRadius' ];
+      const fields = [ 'appTitle', 'appSubtitle', 'appLogo', 'bgWatermark', 'bgOpacity', 'lineToken', 'botBasicId', 'botQrUrl', 'officeIps', 'bannerPR', 'bannerCheckIn', 'bannerCheckOut', 'bannerLeave', 'bannerSummary', 'bannerHoliday', 'executiveUids', 'bannerExecutive', 'bannerScanner', 'officeLat', 'officeLng', 'officeRadius', 'executiveToken' ];
       fields.forEach(function(k) {
         const el = document.getElementById('set-' + k);
         if (el && s[k] !== undefined) el.value = s[k];
@@ -1927,8 +1925,13 @@
         bannerScanner: document.getElementById('set-bannerScanner').value.trim(),
         officeLat: document.getElementById('set-officeLat').value.trim(),
         officeLng: document.getElementById('set-officeLng').value.trim(),
-        officeRadius: document.getElementById('set-officeRadius').value.trim()
+        officeRadius: document.getElementById('set-officeRadius').value.trim(),
+        executiveUids: document.getElementById('set-executiveUids').value.trim(),
+        bannerExecutive: document.getElementById('set-bannerExecutive').value.trim(),
+        bannerScanner: document.getElementById('set-bannerScanner').value.trim(),
+        executiveToken: document.getElementById('set-executiveToken').value.trim()
       };
+      
       
 
       uiShowLoading('กำลังบันทึก...');
