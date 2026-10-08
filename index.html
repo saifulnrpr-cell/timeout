@@ -2538,21 +2538,40 @@
           } else {
             let listHtml = '';
             res.todayDetails.forEach(emp => {
+              // เพิ่ม .trim() เพื่อล้างช่องว่าง (Spacebar) ที่อาจเผลอพิมพ์เกินมาใน Sheet ป้องกันระบบรวน
+              let rawStatus = String(emp.status || '').trim();
+              let rawNote = String(emp.note || '').trim();
+              
               let statusCss = "text-slate-500 bg-slate-200";
-              let timeText = emp.status;
+              let timeText = rawStatus;
               let icon = '<i class="fa-solid fa-user-xmark"></i>';
               let iconColor = 'text-slate-400';
 
-              if (emp.status === 'ปกติ' || emp.status === 'สาย') {
-                statusCss = emp.status === 'สาย' ? "text-amber-600 bg-amber-100" : "text-emerald-600 bg-emerald-100";
-                timeText = `${emp.timeIn || '-'} - ${emp.timeOut || '-'}`;
-                icon = '<i class="fa-solid fa-user-check"></i>';
-                iconColor = emp.status === 'สาย' ? 'text-amber-500' : 'text-emerald-500';
-              } else if (emp.status === 'ลางาน' || emp.note !== '') {
+              // ตรวจสอบและแยกสีป้ายสถานะให้ชัดเจนขึ้น
+              if (rawStatus === 'ลางาน' || rawNote.includes('ลางาน')) {
                 statusCss = "text-blue-600 bg-blue-100";
                 icon = '<i class="fa-solid fa-plane"></i>';
                 iconColor = 'text-blue-500';
                 timeText = 'ลางาน';
+              } else if (rawNote.includes('ราชการ') || rawNote.includes('อบรม')) {
+                statusCss = "text-indigo-600 bg-indigo-100";
+                icon = '<i class="fa-solid fa-briefcase"></i>';
+                iconColor = 'text-indigo-500';
+                timeText = 'ไปราชการ';
+              } else if (rawStatus === 'ปกติ' || rawStatus === 'สาย' || rawStatus === 'มาสาย') {
+                statusCss = (rawStatus === 'สาย' || rawStatus === 'มาสาย') ? "text-amber-600 bg-amber-100" : "text-emerald-600 bg-emerald-100";
+                timeText = `${emp.timeIn || '-'} - ${emp.timeOut || '-'}`;
+                icon = '<i class="fa-solid fa-user-check"></i>';
+                iconColor = (rawStatus === 'สาย' || rawStatus === 'มาสาย') ? 'text-amber-500' : 'text-emerald-500';
+              } else if (rawStatus === 'ยังไม่ลงเวลา') {
+                statusCss = "text-slate-500 bg-slate-100 border border-slate-200";
+                timeText = "ยังไม่ลงเวลา";
+                icon = '<i class="fa-solid fa-clock text-slate-300"></i>';
+                iconColor = 'text-slate-300';
+              } else {
+                // กรณีแอดมินพิมพ์ข้อความสถานะอื่นๆ เอง
+                statusCss = "text-slate-600 bg-slate-200";
+                timeText = rawStatus;
               }
 
               // ขยายขนาดรูปโปรไฟล์เป็น w-10 h-10 พร้อมใส่กรอบให้ดูมีมิติ
@@ -2576,8 +2595,6 @@
                 </div>
               `;
             });
-            listContainer.innerHTML = listHtml;
-          }
 
           // 4. ปฏิทิน Compact แบบ Trello
           const calendarEl = document.getElementById('attendanceCalendar');
