@@ -892,7 +892,15 @@
                     <input type="file" accept="image/*" class="hidden" onchange="handleFileUpload(this, 'set-bannerScanner', 'prev-bannerScanner')">
                   </label>
                 </div>
-
+                <div class="p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50/50 space-y-2.5">
+                  <span class="text-sm font-semibold text-emerald-800 block">9. แจ้งเตือนผู้บริหาร (พนักงานลางาน)</span>
+                  <img id="prev-bannerLeaveNotify" src="https://placehold.co/400x260" class="w-full h-28 object-cover rounded-lg border border-emerald-300 bg-white">
+                  <input type="text" id="set-bannerLeaveNotify" oninput="updatePreview('set-bannerLeaveNotify', 'prev-bannerLeaveNotify')" class="w-full px-3 py-1.5 text-xs border border-emerald-300 rounded-lg bg-white">
+                  <label class="w-full inline-flex justify-center items-center px-3 py-1.5 bg-white border border-emerald-300 text-emerald-700 text-xs font-medium rounded-lg cursor-pointer hover:bg-emerald-100 transition">
+                    <i class="fa-solid fa-upload mr-1.5"></i> อัปโหลดรูปแบนเนอร์
+                    <input type="file" accept="image/*" class="hidden" onchange="handleFileUpload(this, 'set-bannerLeaveNotify', 'prev-bannerLeaveNotify')">
+                  </label>
+                </div>
 
               </div>
             </div>
@@ -1861,7 +1869,7 @@
       document.getElementById('set-adminPassword').value = adminSystemPassword;
       document.getElementById('set-blockWeekend').checked = (String(s.blockWeekend) !== 'false');
       document.getElementById('set-enableIpCheck').checked = (String(s.enableIpCheck) !== 'false');
-      const fields = [ 'appTitle', 'appSubtitle', 'appLogo', 'bgWatermark', 'bgOpacity', 'lineToken', 'botBasicId', 'botQrUrl', 'officeIps', 'bannerPR', 'bannerCheckIn', 'bannerCheckOut', 'bannerLeave', 'bannerSummary', 'bannerHoliday', 'executiveUids', 'bannerExecutive', 'bannerScanner', 'officeLat', 'officeLng', 'officeRadius', 'executiveToken' ];
+      const fields = [ 'appTitle', 'appSubtitle', 'appLogo', 'bgWatermark', 'bgOpacity', 'lineToken', 'botBasicId', 'botQrUrl', 'officeIps', 'bannerPR', 'bannerCheckIn', 'bannerCheckOut', 'bannerLeave', 'bannerSummary', 'bannerHoliday', 'executiveUids', 'bannerExecutive', 'bannerScanner', 'officeLat', 'officeLng', 'officeRadius', 'executiveToken', 'bannerLeaveNotify' ];
       fields.forEach(function(k) {
         const el = document.getElementById('set-' + k);
         if (el && s[k] !== undefined) el.value = s[k];
@@ -1929,7 +1937,9 @@
         executiveUids: document.getElementById('set-executiveUids').value.trim(),
         bannerExecutive: document.getElementById('set-bannerExecutive').value.trim(),
         bannerScanner: document.getElementById('set-bannerScanner').value.trim(),
-        executiveToken: document.getElementById('set-executiveToken').value.trim()
+        executiveToken: document.getElementById('set-executiveToken').value.trim(),
+        executiveToken: document.getElementById('set-executiveToken').value.trim(),
+        bannerLeaveNotify: document.getElementById('set-bannerLeaveNotify').value.trim()
       };
       
       
