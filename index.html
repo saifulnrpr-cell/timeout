@@ -1383,15 +1383,14 @@
 
     function handleSubmitLeaveRange(e) {
       e.preventDefault();
-      if (res && res.success) {
-            // เรียกใช้ Pop-up นับถอยหลัง 5 วินาที
-            showSuccessCountdown('บันทึกข้อมูลสำเร็จ!', res.message);
-            
-          } else {
-            Swal.fire({ icon: 'warning', title: 'ไม่สามารถบันทึกได้', text: res ? res.message : 'เกิดข้อผิดพลาด' });
-          }
       
-     const payload = {
+      // เช็กก่อนว่ามี UID หรือไม่
+      if (!currentLineUid) {
+        Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณาทำรายการผ่าน LINE และตรวจสอบการเชื่อมต่อ' });
+        return;
+      }
+      
+      const payload = {
         userId: currentLineUid,
         idCard: currentSavedIdCard || '',
         leaveCategory: document.getElementById('selectedLeaveCategory').value,
@@ -1400,6 +1399,7 @@
         customNote: document.getElementById('leaveCustomNote').value.trim(),
         pictureUrl: localStorage.getItem('ATTENDANCE_LINE_PIC') || ''
       };
+      
       uiShowLoading('กำลังบันทึกข้อมูล...');
       google.script.run
         .withSuccessHandler(function(res) {
@@ -1408,11 +1408,15 @@
             Swal.fire({ icon: 'warning', title: 'ยังไม่ได้ผูกบัญชี', text: 'กรุณากลับไปพิมพ์เลขบัตร 13 หลักในช่องแชต LINE ครับ' });
             return;
           }
+          
+          // 🟢 โค้ดส่วนที่ถูกต้องเมื่อบันทึกสำเร็จ (วางไว้ตรงนี้)
           if (res && res.success) {
-            Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', text: res.message, timer: 1800, showConfirmButton: false }).then(function() { closeScannerWindow(); });
+            // เรียกใช้ Pop-up นับถอยหลัง 5 วินาที
+            showSuccessCountdown('บันทึกข้อมูลสำเร็จ!', res.message);
           } else {
             Swal.fire({ icon: 'warning', title: 'ไม่สามารถบันทึกได้', text: res ? res.message : 'เกิดข้อผิดพลาด' });
           }
+          
         })
         .withFailureHandler(function(err) {
           Swal.close();
