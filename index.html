@@ -1383,10 +1383,13 @@
 
     function handleSubmitLeaveRange(e) {
       e.preventDefault();
-      if (!currentLineUid) {
-        Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณาทำรายการผ่าน LINE และตรวจสอบการเชื่อมต่อ' });
-        return;
-      }
+      if (res && res.success) {
+            // เรียกใช้ Pop-up นับถอยหลัง 5 วินาที
+            showSuccessCountdown('บันทึกข้อมูลสำเร็จ!', res.message);
+            
+          } else {
+            Swal.fire({ icon: 'warning', title: 'ไม่สามารถบันทึกได้', text: res ? res.message : 'เกิดข้อผิดพลาด' });
+          }
       
      const payload = {
         userId: currentLineUid,
@@ -1452,6 +1455,51 @@
       try { window.top.close(); } catch (e) {}
       window.close();
       setTimeout(function() { window.location.href = "line://nv/chat"; }, 300);
+    }
+
+    // ---------------------------------------------------------
+    // ฟังก์ชัน Pop-up แจ้งเตือนสำเร็จพร้อมนับถอยหลัง 5 วินาที
+    // ---------------------------------------------------------
+    function showSuccessCountdown(titleText, descText) {
+      let timerInterval;
+      Swal.fire({
+        title: `<span class="text-xl font-bold text-slate-800">${titleText}</span>`,
+        html: `
+          <div class="mt-1 space-y-4">
+            <p class="text-sm text-slate-600 font-medium leading-relaxed">${descText}</p>
+            <div class="bg-teal-50 border border-teal-200 rounded-2xl p-3.5 flex items-center justify-center gap-3 shadow-inner">
+               <div class="relative flex h-3 w-3">
+                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                 <span class="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
+               </div>
+               <span class="text-xs text-teal-800 font-semibold tracking-wide">
+                 หน้าต่างจะปิดอัตโนมัติใน <span id="swal-countdown" class="text-lg font-black text-teal-600 mx-1">5</span> วินาที
+               </span>
+            </div>
+          </div>
+        `,
+        icon: 'success',
+        timer: 5000, // ตั้งเวลา 5 วินาที (5000 ms)
+        timerProgressBar: true, // เปิดหลอดวิ่งด้านล่าง
+        showConfirmButton: false, // ซ่อนปุ่ม OK
+        allowOutsideClick: false, // ห้ามกดคลิกข้างนอกเพื่อปิด
+        customClass: {
+          popup: '!w-[92%] md:!w-[400px] !rounded-[2rem] !p-6 border border-white shadow-2xl',
+          timerProgressBar: '!bg-teal-500 !h-1.5' // เปลี่ยนสีและขนาดหลอดโหลด
+        },
+        didOpen: () => {
+          const b = Swal.getHtmlContainer().querySelector('#swal-countdown');
+          timerInterval = setInterval(() => {
+            if(b) b.textContent = Math.ceil(Swal.getTimerLeft() / 1000);
+          }, 100);
+        },
+        willClose: () => {
+          clearInterval(timerInterval);
+        }
+      }).then(() => {
+        // เมื่อนับเวลาจบ ให้เรียกฟังก์ชันปิดหน้าต่าง LIFF
+        closeScannerWindow();
+      });
     }
 
     async function fetchClientPublicIp() {
@@ -1584,7 +1632,13 @@
           updateWifiVisual('success', 'บันทึก' + res.actionType + 'สำเร็จ!', res.empName + ' • ' + res.time + ' น.');
           document.getElementById('officeIpStatusText').innerText = res.clientIp ? `✅ เครือข่ายตรง` : `📍 GPS (ในระยะ)`;
           document.getElementById('officeIpStatusText').className = 'font-bold text-emerald-600';
-          setTimeout(function() { closeScannerWindow(); }, 1500);
+          
+          // เรียกใช้ Pop-up นับถอยหลัง 5 วินาที
+          showSuccessCountdown(
+            `บันทึก${res.actionType}สำเร็จ!`, 
+            `คุณ <b>${res.empName}</b><br>เวลาลงบันทึก: <b class="text-teal-600 text-base">${res.time} น.</b>`
+          );
+          
         } else {
           updateWifiVisual('error', 'ไม่สามารถบันทึกเวลาได้', res.message);
           document.getElementById('wifiRetryBox').classList.remove('hidden');
