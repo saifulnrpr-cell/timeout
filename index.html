@@ -1042,26 +1042,40 @@
     let adminSystemPassword = '123456';
     let isAdminUnlocked = sessionStorage.getItem('ADMIN_UNLOCKED_SESSION') === 'true';
 
-    // 🟢 ฟังก์ชันสร้างเสียง Beep (Web Audio API) แบบไม่ต้องใช้ไฟล์เสียง
+   // 🟢 โค้ดระบบเสียง Beep (เวอร์ชันปลดล็อกบนมือถือ)
+    let sysAudioCtx = null;
+    
+    function unlockAudio() {
+      if (!sysAudioCtx) {
+        sysAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (sysAudioCtx.state === 'suspended') {
+        sysAudioCtx.resume();
+      }
+    }
+    
+    // ดักจับการแตะหน้าจอเพื่อปลดล็อกเสียงทันทีที่ผู้ใช้สัมผัสจอ
+    document.addEventListener('touchstart', unlockAudio, { once: true });
+    document.addEventListener('click', unlockAudio, { once: true });
+
     function playSuccessBeep() {
       try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioContext();
-        const osc = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-        
+        unlockAudio(); // เรียกใช้งาน Context ที่ปลดล็อกแล้ว
+        const osc = sysAudioCtx.createOscillator();
+        const gainNode = sysAudioCtx.createGain();
+
         osc.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        
-        osc.type = 'sine'; // ประเภทคลื่นเสียง
-        osc.frequency.value = 1500; // ความถี่เสียง (1500Hz เป็นเสียงติ๊ดแบบเครื่องสแกน)
-        
-        // ตั้งค่าระดับเสียงและการจางหายไป (Fade out)
-        gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-        
+        gainNode.connect(sysAudioCtx.destination);
+
+        osc.type = 'sine';
+        osc.frequency.value = 1200; // ความถี่เสียง
+
+        // ปรับระดับเสียงให้ดังขึ้น (0.5 คือดังปานกลาง-มาก)
+        gainNode.gain.setValueAtTime(0.5, sysAudioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, sysAudioCtx.currentTime + 0.2);
+
         osc.start();
-        osc.stop(ctx.currentTime + 0.15);
+        osc.stop(sysAudioCtx.currentTime + 0.2);
       } catch (e) {
         console.warn("ไม่สามารถเล่นเสียงได้: ", e);
       }
