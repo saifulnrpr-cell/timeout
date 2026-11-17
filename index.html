@@ -2897,24 +2897,53 @@ function getRandomVoiceMessage(type, fullName) {
 }
 
 function speakMessage(text) {
-  if ('speechSynthesis' in window) {
-    let speech = new SpeechSynthesisUtterance(text);
-    speech.lang = 'th-TH'; 
-    speech.rate = 1.0;     
-    speech.pitch = 1.0;    
-    window.speechSynthesis.speak(speech);
+  if (!('speechSynthesis' in window)) {
+    console.warn('เบราว์เซอร์นี้ไม่รองรับระบบเสียง');
+    return;
   }
+
+  if (!text) return;
+
+  const synth = window.speechSynthesis;
+  const speech = new SpeechSynthesisUtterance(text);
+
+  speech.lang = 'th-TH';
+  speech.rate = 0.95;
+  speech.pitch = 1.0;
+  speech.volume = 1;
+
+  speech.onerror = function(event) {
+    console.error('เกิดข้อผิดพลาดในการเล่นเสียง:', event.error);
+  };
+
+  synth.resume();
+  synth.speak(speech);
 }
 
-    function unlockVoiceAndStart() {
-    // 1. ปลดล็อกระบบเสียงทันทีที่นิ้วแตะ (พูดข้อความว่างเปล่า)
-    if ('speechSynthesis' in window) {
-        let unlockSpeech = new SpeechSynthesisUtterance('');
-        window.speechSynthesis.speak(unlockSpeech);
-    }
-    
-    // 2. เริ่มกระบวนการลงเวลาตามปกติ
-    startWifiAutoCheckIn();
+function unlockVoiceAndStart() {
+  if ('speechSynthesis' in window) {
+    const synth = window.speechSynthesis;
+
+    // โหลดรายการเสียงของอุปกรณ์
+    synth.getVoices();
+
+    // ปลดล็อกระบบเสียงด้วยข้อความจริง
+    // เพราะข้อความว่างเปล่าอาจไม่ปลดล็อกในมือถือบางรุ่น
+    const unlockSpeech = new SpeechSynthesisUtterance(
+      'กำลังตรวจสอบการลงเวลา'
+    );
+
+    unlockSpeech.lang = 'th-TH';
+    unlockSpeech.rate = 1.0;
+    unlockSpeech.volume = 1;
+
+    synth.cancel();
+    synth.speak(unlockSpeech);
+    synth.resume();
+  }
+
+  // เริ่มระบบลงเวลาเดิม
+  startWifiAutoCheckIn();
 }
 
   </script>
