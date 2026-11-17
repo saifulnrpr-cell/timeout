@@ -1042,43 +1042,67 @@
     let adminSystemPassword = '123456';
     let isAdminUnlocked = sessionStorage.getItem('ADMIN_UNLOCKED_SESSION') === 'true';
 
-   // 🟢 โค้ดระบบเสียง Beep (เวอร์ชันปลดล็อกบนมือถือ)
-    let sysAudioCtx = null;
-    
+   // 🟢 โค้ดระบบเสียงพูด Web Speech API (Text-to-Speech)
     function unlockAudio() {
-      if (!sysAudioCtx) {
-        sysAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (sysAudioCtx.state === 'suspended') {
-        sysAudioCtx.resume();
+      // ปลดล็อกการใช้เสียงพูดบนมือถือ (iOS/Android) ทันทีที่แตะหน้าจอ
+      if ('speechSynthesis' in window) {
+        const dummy = new SpeechSynthesisUtterance('');
+        dummy.volume = 0;
+        window.speechSynthesis.speak(dummy);
       }
     }
     
-    // ดักจับการแตะหน้าจอเพื่อปลดล็อกเสียงทันทีที่ผู้ใช้สัมผัสจอ
     document.addEventListener('touchstart', unlockAudio, { once: true });
     document.addEventListener('click', unlockAudio, { once: true });
 
-    function playSuccessBeep() {
-      try {
-        unlockAudio(); // เรียกใช้งาน Context ที่ปลดล็อกแล้ว
-        const osc = sysAudioCtx.createOscillator();
-        const gainNode = sysAudioCtx.createGain();
-
-        osc.connect(gainNode);
-        gainNode.connect(sysAudioCtx.destination);
-
-        osc.type = 'sine';
-        osc.frequency.value = 1200; // ความถี่เสียง
-
-        // ปรับระดับเสียงให้ดังขึ้น (0.5 คือดังปานกลาง-มาก)
-        gainNode.gain.setValueAtTime(0.5, sysAudioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, sysAudioCtx.currentTime + 0.2);
-
-        osc.start();
-        osc.stop(sysAudioCtx.currentTime + 0.2);
-      } catch (e) {
-        console.warn("ไม่สามารถเล่นเสียงได้: ", e);
+    function speakMessage(type, empName = "") {
+      if (!('speechSynthesis' in window)) {
+        console.warn("บราวเซอร์นี้ไม่รองรับระบบอ่านออกเสียง");
+        return;
       }
+
+      let messages = [];
+      
+      if (type === 'IN_NORMAL') {
+        messages = [
+          `${empName} เข้างานสำเร็จค่ะ ขอบคุณค่ะ`,
+          `บันทึกเวลา ${empName} เรียบร้อยค่ะ เริ่มต้นวันทำงานกันเลยค่ะ`,
+          `ลงเวลาเรียบร้อยแล้วค่ะ ${empName} ขอให้สนุกกับการทำงานนะคะ`,
+          `สวัสดีค่ะ ${empName} เข้างานสำเร็จค่ะ`
+        ];
+      } else if (type === 'IN_LATE') {
+        messages = [
+          `บันทึกเวลาเรียบร้อยค่ะ วันนี้ ${empName} เข้างานสายนะคะ`,
+          `บันทึกสำเร็จค่ะ ${empName} ขอความร่วมมือเข้างานให้ตรงเวลานะคะ`
+        ];
+      } else if (type === 'OUT') {
+        messages = [
+          `${empName} ออกงานสำเร็จค่ะ ขอบคุณค่ะ`,
+          `บันทึกเวลาออกงานเรียบร้อยค่ะ ${empName} แล้วพบกันใหม่นะคะ`,
+          `ลงเวลาเรียบร้อยค่ะ ${empName} กลับบ้านปลอดภัยนะคะ`,
+          `ระบบบันทึกเวลาออกงาน ${empName} สำเร็จค่ะ`
+        ];
+      } else if (type === 'ERROR') {
+        messages = [
+          "บันทึกข้อมูลไม่สำเร็จค่ะ กรุณาลองใหม่อีกครั้งนะคะ",
+          "เกิดข้อผิดพลาดในการบันทึกเวลาค่ะ กรุณาตรวจสอบอินเทอร์เน็ต",
+          "ระบบไม่สามารถบันทึกข้อมูลได้ค่ะ กรุณาติดต่อผู้ดูแลระบบนะคะ"
+        ];
+      }
+
+      // สุ่มข้อความ
+      const randomIndex = Math.floor(Math.random() * messages.length);
+      const textToSpeak = messages[randomIndex];
+
+      // ยกเลิกเสียงที่กำลังพูดค้างอยู่ (ถ้ามี)
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = 'th-TH'; // กำหนดให้พูดภาษาไทย
+      utterance.rate = 1.0; // ความเร็ว (ปรับเพิ่ม-ลดได้)
+      utterance.pitch = 1.1; // โทนเสียง (ปรับให้สูงขึ้นเล็กน้อยเพื่อให้ดูสดใส)
+      
+      window.speechSynthesis.speak(utterance);
     }
 
     window.onload = function() {
@@ -1619,6 +1643,7 @@
            }
            
            // หากคำนวณ GPS แล้วเกินระยะ หรือ ไม่ได้ตั้งค่า GPS ไว้
+           speakMessage('ERROR'); // 🟢 สั่งพูดเมื่อเกิดข้อผิดพลาดเครือข่าย
            updateWifiVisual('error', 'ไม่สามารถลงเวลาได้', res.message);
            document.getElementById('officeIpStatusText').innerText = res.outOfRange ? `ห่าง ${res.distance} ม.` : 'ไม่อนุญาตให้สแกน';
            document.getElementById('officeIpStatusText').className = 'font-bold text-rose-600';
@@ -1672,7 +1697,18 @@
 
         // 4. บันทึกข้อมูลสำเร็จ (โชว์สถานะเครือข่าย หรือ GPS)
         if (res.success) {
-          playSuccessBeep(); // 🟢 เพิ่มคำสั่งเล่นเสียง Beep ตรงนี้
+          
+          // 🟢 ตรวจสอบสถานะและสั่งให้ระบบพูด
+          if (res.actionType === 'เข้างาน') {
+            if (res.status === 'สาย' || res.status === 'มาสาย') {
+              speakMessage('IN_LATE', res.empName);
+            } else {
+              speakMessage('IN_NORMAL', res.empName);
+            }
+          } else if (res.actionType === 'ออกงาน') {
+            speakMessage('OUT', res.empName);
+          }
+
           updateWifiVisual('success', 'บันทึก' + res.actionType + 'สำเร็จ!', res.empName + ' • ' + res.time + ' น.');
           document.getElementById('officeIpStatusText').innerText = res.clientIp ? `✅ เครือข่ายตรง` : `📍 GPS (ในระยะ)`;
           document.getElementById('officeIpStatusText').className = 'font-bold text-emerald-600';
@@ -1684,9 +1720,11 @@
           );
           
         } else {
+          speakMessage('ERROR'); // 🟢 สั่งพูดเมื่อเกิดข้อผิดพลาด
           updateWifiVisual('error', 'ไม่สามารถบันทึกเวลาได้', res.message);
           document.getElementById('wifiRetryBox').classList.remove('hidden');
         }
+        
       }).submitIpClockInOut({
         userId: currentLineUid,
         idCard: currentSavedIdCard || '',
