@@ -1077,51 +1077,7 @@
     let adminSystemPassword = '123456';
     let isAdminUnlocked = sessionStorage.getItem('ADMIN_UNLOCKED_SESSION') === 'true';
 
-function speakMessage(type, empName = "") {
-  if (!('speechSynthesis' in window)) {
-    console.warn("บราวเซอร์นี้ไม่รองรับระบบอ่านออกเสียง");
-    return;
-  }
 
-  let messages = [];
-  const cleanName = empName.replace(/^(นาย|นางสาว|นาง|น\.ส\.|ด\.ต\.|ส\.ต\.ท\.)\s*/, '');
-  
-  if (type === 'IN_NORMAL') {
-    messages = [
-      `${cleanName} เข้างานสำเร็จค่ะ ขอบคุณค่ะ`,
-      `บันทึกเวลา ${cleanName} เรียบร้อยค่ะ เริ่มต้นวันทำงานกันเลยค่ะ`,
-      `ลงเวลาเรียบร้อยแล้วค่ะ ${cleanName} ขอให้สนุกกับการทำงานนะคะ`,
-      `สวัสดีค่ะ ${cleanName} เข้างานสำเร็จค่ะ`
-    ];
-  } else if (type === 'IN_LATE') {
-    messages = [
-      `บันทึกเวลาเรียบร้อยค่ะ วันนี้ ${cleanName} เข้างานสายนะคะ`,
-      `บันทึกสำเร็จค่ะ ${cleanName} ขอความร่วมมือเข้างานให้ตรงเวลานะคะ`
-    ];
-  } else if (type === 'OUT') {
-    messages = [
-      `${cleanName} ออกงานสำเร็จค่ะ ขอบคุณค่ะ`,
-      `บันทึกเวลาออกงานเรียบร้อยค่ะ ${cleanName} แล้วพบกันใหม่นะคะ`,
-      `ลงเวลาเรียบร้อยค่ะ ${cleanName} กลับบ้านปลอดภัยนะคะ`,
-      `ระบบบันทึกเวลาออกงาน ${cleanName} สำเร็จค่ะ`
-    ];
-  } else if (type === 'ERROR') {
-    messages = [
-      "บันทึกข้อมูลไม่สำเร็จค่ะ กรุณาลองใหม่อีกครั้งนะคะ",
-      "ระบบไม่สามารถบันทึกข้อมูลได้ค่ะ กรุณาตรวจสอบอินเทอร์เน็ต"
-    ];
-  }
-
-  const textToSpeak = messages[Math.floor(Math.random() * messages.length)];
-
-  // สั่งเล่นเสียงทันทีโดยไม่ต้องใช้ setTimeout
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(textToSpeak);
-  utterance.lang = 'th-TH';
-  utterance.rate = 1.0;
-  utterance.pitch = 1.1;
-  window.speechSynthesis.speak(utterance);
-}
 
     // ----------------------------------------------------
     // 2. ฟังก์ชันโหลดการทำงานเมื่อเปิดเว็บ
@@ -2989,32 +2945,82 @@ function speakMessage(type, empName = "") {
   }).getEmployeeInfoForClient(currentLineUid, '');
 }
 
-function unlockAndStartScan() {
-  // 1. ปลดล็อกระบบเสียงทันทีที่นิ้วแตะปุ่ม
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    // ใส่ข้อความเว้นวรรค ' ' แทนค่าว่างเปล่า '' เพื่อบังคับให้เบราว์เซอร์รับรู้การใช้เสียง
-    const dummy = new SpeechSynthesisUtterance(' ');
-    dummy.volume = 0;
-    window.speechSynthesis.speak(dummy);
-    window.speechSynthesis.resume(); // กระตุ้นเอนจินอีกรอบป้องกันเสียงค้าง
-  }
-  
-  // 2. สลับหน้าจอไปเริ่มสแกน IP/GPS เบื้องหลัง
-  const confirmApp = document.getElementById('profileConfirmApp');
-  const scannerApp = document.getElementById('wifiScannerApp');
-  
-  confirmApp.classList.add('animate__fadeOut');
-  
-  setTimeout(() => {
-    confirmApp.classList.add('hidden');
-    scannerApp.classList.remove('hidden');
-    scannerApp.style.backgroundImage = confirmApp.style.backgroundImage;
-    
-    // 3. เริ่มกระบวนการสแกนและบันทึกเวลา
-    startWifiAutoCheckIn();
-  }, 300);
-}
+// ----------------------------------------------------
+    // 1. ระบบปลดล็อกเสียงแบบ Global (ถอดแบบจากแอปเบิกจ่าย)
+    // ----------------------------------------------------
+    function unlockAudioGlobal() {
+      if ('speechSynthesis' in window) {
+        const dummy = new SpeechSynthesisUtterance('');
+        dummy.volume = 0;
+        window.speechSynthesis.speak(dummy);
+      }
+    }
+    // ดักจับการแตะหน้าจอครั้งแรก (ไม่ว่าจะแตะตรงไหน) เพื่อปลดล็อกลำโพงทันที
+    document.addEventListener('touchstart', unlockAudioGlobal, { once: true });
+    document.addEventListener('click', unlockAudioGlobal, { once: true });
+
+    // ----------------------------------------------------
+    // 2. ฟังก์ชันระบบเสียง (ตัดคำสั่งที่ทำให้เกิดบั๊กออกทั้งหมด)
+    // ----------------------------------------------------
+    function speakMessage(type, empName = "") {
+      if (!('speechSynthesis' in window)) return;
+
+      let messages = [];
+      const cleanName = empName.replace(/^(นาย|นางสาว|นาง|น\.ส\.|ด\.ต\.|ส\.ต\.ท\.)\s*/, '');
+      
+      if (type === 'IN_NORMAL') {
+        messages = [
+          `${cleanName} เข้างานสำเร็จค่ะ ขอบคุณค่ะ`,
+          `บันทึกเวลา ${cleanName} เรียบร้อยค่ะ เริ่มต้นวันทำงานกันเลยค่ะ`,
+          `ลงเวลาเรียบร้อยแล้วค่ะ ${cleanName} ขอให้สนุกกับการทำงานนะคะ`,
+          `สวัสดีค่ะ ${cleanName} เข้างานสำเร็จค่ะ`
+        ];
+      } else if (type === 'IN_LATE') {
+        messages = [
+          `บันทึกเวลาเรียบร้อยค่ะ วันนี้ ${cleanName} เข้างานสายนะคะ`,
+          `บันทึกสำเร็จค่ะ ${cleanName} ขอความร่วมมือเข้างานให้ตรงเวลานะคะ`
+        ];
+      } else if (type === 'OUT') {
+        messages = [
+          `${cleanName} ออกงานสำเร็จค่ะ ขอบคุณค่ะ`,
+          `บันทึกเวลาออกงานเรียบร้อยค่ะ ${cleanName} แล้วพบกันใหม่นะคะ`,
+          `ลงเวลาเรียบร้อยค่ะ ${cleanName} กลับบ้านปลอดภัยนะคะ`,
+          `ระบบบันทึกเวลาออกงาน ${cleanName} สำเร็จค่ะ`
+        ];
+      } else if (type === 'ERROR') {
+        messages = [
+          "บันทึกข้อมูลไม่สำเร็จค่ะ กรุณาลองใหม่อีกครั้งนะคะ",
+          "ระบบไม่สามารถบันทึกข้อมูลได้ค่ะ กรุณาตรวจสอบอินเทอร์เน็ต"
+        ];
+      }
+
+      const textToSpeak = messages[Math.floor(Math.random() * messages.length)];
+
+      // ใช้โค้ดแบบเดียวกับแอปเบิกจ่ายเป๊ะๆ (สั่งพูดตรงๆ ไม่มี setTimeout)
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = 'th-TH';
+      utterance.rate = 1.0;
+      utterance.pitch = 1.1;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // ----------------------------------------------------
+    // 3. ฟังก์ชันสลับหน้าจอ (เอา Dummy Audio ออกเพราะย้ายไปข้อ 1 แล้ว)
+    // ----------------------------------------------------
+    function unlockAndStartScan() {
+      const confirmApp = document.getElementById('profileConfirmApp');
+      const scannerApp = document.getElementById('wifiScannerApp');
+      
+      confirmApp.classList.add('animate__fadeOut');
+      
+      setTimeout(() => {
+        confirmApp.classList.add('hidden');
+        scannerApp.classList.remove('hidden');
+        scannerApp.style.backgroundImage = confirmApp.style.backgroundImage;
+        
+        startWifiAutoCheckIn();
+      }, 300);
+    }
 
   </script>
 </body>
