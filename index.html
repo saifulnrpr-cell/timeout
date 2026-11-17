@@ -1077,7 +1077,6 @@
     let adminSystemPassword = '123456';
     let isAdminUnlocked = sessionStorage.getItem('ADMIN_UNLOCKED_SESSION') === 'true';
 
-    // 🟢 โค้ดระบบเสียงพูด Web Speech API (Text-to-Speech)
 function speakMessage(type, empName = "") {
   if (!('speechSynthesis' in window)) {
     console.warn("บราวเซอร์นี้ไม่รองรับระบบอ่านออกเสียง");
@@ -1115,14 +1114,13 @@ function speakMessage(type, empName = "") {
 
   const textToSpeak = messages[Math.floor(Math.random() * messages.length)];
 
+  // สั่งเล่นเสียงทันทีโดยไม่ต้องใช้ setTimeout
   window.speechSynthesis.cancel();
-  setTimeout(() => {
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.lang = 'th-TH';
-    utterance.rate = 1.0;
-    utterance.pitch = 1.1;
-    window.speechSynthesis.speak(utterance);
-  }, 300);
+  const utterance = new SpeechSynthesisUtterance(textToSpeak);
+  utterance.lang = 'th-TH';
+  utterance.rate = 1.0;
+  utterance.pitch = 1.1;
+  window.speechSynthesis.speak(utterance);
 }
    
 
@@ -2954,16 +2952,18 @@ function unlockAndStartScan() {
   // 1. ปลดล็อกระบบเสียงทันทีที่นิ้วแตะปุ่ม
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
-    const dummy = new SpeechSynthesisUtterance('');
+    // ใส่ข้อความเว้นวรรค ' ' แทนค่าว่างเปล่า '' เพื่อบังคับให้เบราว์เซอร์รับรู้การใช้เสียง
+    const dummy = new SpeechSynthesisUtterance(' ');
     dummy.volume = 0;
     window.speechSynthesis.speak(dummy);
+    window.speechSynthesis.resume(); // กระตุ้นเอนจินอีกรอบป้องกันเสียงค้าง
   }
   
   // 2. สลับหน้าจอไปเริ่มสแกน IP/GPS เบื้องหลัง
   const confirmApp = document.getElementById('profileConfirmApp');
   const scannerApp = document.getElementById('wifiScannerApp');
   
-  confirmApp.classList.add('animate__fadeOut'); // เฟดออกแบบนุ่มนวล
+  confirmApp.classList.add('animate__fadeOut');
   
   setTimeout(() => {
     confirmApp.classList.add('hidden');
@@ -2972,7 +2972,7 @@ function unlockAndStartScan() {
     
     // 3. เริ่มกระบวนการสแกนและบันทึกเวลา
     startWifiAutoCheckIn();
-  }, 300); // รอแอนิเมชันเสร็จ
+  }, 300);
 }
 
   </script>
