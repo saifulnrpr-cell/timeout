@@ -1105,17 +1105,7 @@
     window.speechSynthesis.speak(utterance);
   }, 300);
 }
-
-      // ยกเลิกเสียงที่กำลังพูดค้างอยู่ (ถ้ามี)
-      window.speechSynthesis.cancel();
-      
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.lang = 'th-TH'; // กำหนดให้พูดภาษาไทย
-      utterance.rate = 1.0; // ความเร็ว (ปรับเพิ่ม-ลดได้)
-      utterance.pitch = 1.1; // โทนเสียง (ปรับให้สูงขึ้นเล็กน้อยเพื่อให้ดูสดใส)
-      
-      window.speechSynthesis.speak(utterance);
-    
+  
 
     // 🟢 1. แก้ไขฟังก์ชันปลดล็อก (เปิดช่องสัญญาณเสียงทันทีที่กดปุ่ม)
     function unlockAndStartScan() {
