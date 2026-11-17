@@ -183,6 +183,11 @@
         <button type="button" onclick="startWifiAutoCheckIn()" class="w-full py-3.5 rounded-2xl font-bold text-base bg-teal-600 hover:bg-teal-700 text-white shadow-xl transition active:scale-95"><i class="fa-solid fa-rotate-right mr-2"></i> ลองใหม่อีกครั้ง</button>
         <button type="button" onclick="closeScannerWindow()" class="w-full py-3 rounded-2xl font-bold text-sm bg-white/70 text-slate-700 hover:bg-white transition active:scale-95 shadow-sm border border-white/50">ปิดหน้าต่าง</button>
       </div>
+
+      <button type="button" onclick="speakMessage('ทดสอบระบบเสียง ทำงานปกติค่ะ')" class="w-full mt-3 py-3 rounded-2xl font-bold text-sm bg-purple-100 text-purple-700 hover:bg-purple-200 transition shadow-sm border border-purple-200">
+  <i class="fa-solid fa-volume-high mr-2"></i> ทดสอบเสียงพูด (แตะที่นี่)
+</button>
+      
     </div>
     
     <div id="adminBackBtnContainer" class="text-center mt-6 relative z-10">
@@ -2888,17 +2893,23 @@ function getRandomVoiceMessage(type, fullName) {
   return phrases[randomIndex];
 }
 
-// ฟังก์ชันสั่งเบราว์เซอร์ให้อ่านออกเสียงภาษาไทย
 function speakMessage(text) {
   if ('speechSynthesis' in window) {
-    // ยกเลิกเสียงที่อาจจะค้างอยู่ก่อนหน้า
-    window.speechSynthesis.cancel();
+    window.speechSynthesis.cancel(); // ล้างคิวเสียงที่อาจจะค้างอยู่
     
+    // สั่งกระตุ้นระบบเสียง (ช่วยแก้บั๊กเสียงไม่ยอมทำงานใน Android)
+    window.speechSynthesis.resume(); 
+
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'th-TH'; // กำหนดให้เป็นเสียงภาษาไทย
-    utterance.rate = 1.0;     // ความเร็วเสียงปกติ (ปรับลด-เพิ่มได้ 0.1 - 2.0)
-    utterance.volume = 1.0;   // ระดับความดังสูงสุด
+    utterance.lang = 'th-TH'; 
+    utterance.rate = 1.0;     
+    utterance.volume = 1.0;   
     
+    // ดักจับ Error เผื่อเบราว์เซอร์ฟ้องว่าถูกบล็อก
+    utterance.onerror = function(e) {
+      console.error('Speech error:', e.error);
+    };
+
     window.speechSynthesis.speak(utterance);
   }
 }
