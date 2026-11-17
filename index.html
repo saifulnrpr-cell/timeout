@@ -1056,52 +1056,55 @@
     document.addEventListener('click', unlockAudio, { once: true });
 
     function speakMessage(type, empName = "") {
-      if (!('speechSynthesis' in window)) {
-        console.warn("บราวเซอร์นี้ไม่รองรับระบบอ่านออกเสียง");
-        return;
-      }
+  if (!('speechSynthesis' in window)) {
+    console.warn("บราวเซอร์นี้ไม่รองรับระบบอ่านออกเสียง");
+    return;
+  }
 
-      let messages = [];
-      
-      if (type === 'IN_NORMAL') {
-        messages = [
-          `${empName} เข้างานสำเร็จค่ะ ขอบคุณค่ะ`,
-          `บันทึกเวลา ${empName} เรียบร้อยค่ะ เริ่มต้นวันทำงานกันเลยค่ะ`,
-          `ลงเวลาเรียบร้อยแล้วค่ะ ${empName} ขอให้สนุกกับการทำงานนะคะ`,
-          `สวัสดีค่ะ ${empName} เข้างานสำเร็จค่ะ`
-        ];
-      } else if (type === 'IN_LATE') {
-        messages = [
-          `บันทึกเวลาเรียบร้อยค่ะ วันนี้ ${empName} เข้างานสายนะคะ`,
-          `บันทึกสำเร็จค่ะ ${empName} ขอความร่วมมือเข้างานให้ตรงเวลานะคะ`
-        ];
-      } else if (type === 'OUT') {
-        messages = [
-          `${empName} ออกงานสำเร็จค่ะ ขอบคุณค่ะ`,
-          `บันทึกเวลาออกงานเรียบร้อยค่ะ ${empName} แล้วพบกันใหม่นะคะ`,
-          `ลงเวลาเรียบร้อยค่ะ ${empName} กลับบ้านปลอดภัยนะคะ`,
-          `ระบบบันทึกเวลาออกงาน ${empName} สำเร็จค่ะ`
-        ];
-      } else if (type === 'ERROR') {
-        messages = [
-          "บันทึกข้อมูลไม่สำเร็จค่ะ กรุณาลองใหม่อีกครั้งนะคะ",
-          "เกิดข้อผิดพลาดในการบันทึกเวลาค่ะ กรุณาตรวจสอบอินเทอร์เน็ต",
-          "ระบบไม่สามารถบันทึกข้อมูลได้ค่ะ กรุณาติดต่อผู้ดูแลระบบนะคะ"
-        ];
-      }
+  let messages = [];
+  
+  if (type === 'IN_NORMAL') {
+    messages = [
+      `${empName} เข้างานสำเร็จค่ะ ขอบคุณค่ะ`,
+      `บันทึกเวลา ${empName} เรียบร้อยค่ะ เริ่มต้นวันทำงานกันเลยค่ะ`,
+      `ลงเวลาเรียบร้อยแล้วค่ะ ${empName} ขอให้สนุกกับการทำงานนะคะ`,
+      `สวัสดีค่ะ ${empName} เข้างานสำเร็จค่ะ`
+    ];
+  } else if (type === 'IN_LATE') {
+    messages = [
+      `บันทึกเวลาเรียบร้อยค่ะ วันนี้ ${empName} เข้างานสายนะคะ`,
+      `บันทึกสำเร็จค่ะ ${empName} ขอความร่วมมือเข้างานให้ตรงเวลานะคะ`
+    ];
+  } else if (type === 'OUT') {
+    messages = [
+      `${empName} ออกงานสำเร็จค่ะ ขอบคุณค่ะ`,
+      `บันทึกเวลาออกงานเรียบร้อยค่ะ ${empName} แล้วพบกันใหม่นะคะ`,
+      `ลงเวลาเรียบร้อยค่ะ ${empName} กลับบ้านปลอดภัยนะคะ`,
+      `ระบบบันทึกเวลาออกงาน ${empName} สำเร็จค่ะ`
+    ];
+  } else if (type === 'ERROR') {
+    messages = [
+      "บันทึกข้อมูลไม่สำเร็จค่ะ กรุณาลองใหม่อีกครั้งนะคะ",
+      "เกิดข้อผิดพลาดในการบันทึกเวลาค่ะ กรุณาตรวจสอบอินเทอร์เน็ต",
+      "ระบบไม่สามารถบันทึกข้อมูลได้ค่ะ กรุณาติดต่อผู้ดูแลระบบนะคะ"
+    ];
+  }
 
-      // สุ่มข้อความ
-      const textToSpeak = messages[Math.floor(Math.random() * messages.length)];
+  // สุ่มข้อความ
+  const textToSpeak = messages[Math.floor(Math.random() * messages.length)];
 
-      // ใช้ setTimeout หน่วงเวลาเล็กน้อย (แก้บั๊ก iOS/Safari ที่มักจะตัดเสียงทิ้งถ้าสั่งทำงานทันทีหลังโหลดข้อมูลเสร็จ)
-      setTimeout(() => {
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        utterance.lang = 'th-TH';
-        utterance.rate = 1.0;
-        utterance.pitch = 1.1;
-        window.speechSynthesis.speak(utterance);
-      }, 300); // หน่วงเวลา 0.3 วินาที
-    }
+  // ยกเลิกเสียงที่กำลังพูดค้างอยู่ (ถ้ามี) ก่อนเริ่มพูดใหม่
+  window.speechSynthesis.cancel();
+
+  // ใช้ setTimeout หน่วงเวลาเล็กน้อยแก้บั๊ก iOS/Safari
+  setTimeout(() => {
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = 'th-TH';
+    utterance.rate = 1.0;
+    utterance.pitch = 1.1;
+    window.speechSynthesis.speak(utterance);
+  }, 300);
+}
 
       // ยกเลิกเสียงที่กำลังพูดค้างอยู่ (ถ้ามี)
       window.speechSynthesis.cancel();
