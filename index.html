@@ -172,6 +172,11 @@
         <span class="text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full bg-white/60 text-teal-800 border border-white/80 shadow-sm backdrop-blur-md">1-Click Auto Check-in</span>
         <h2 id="wifiScanTitle" class="text-2xl font-bold text-slate-800 pt-2 drop-shadow-sm">กำลังเชื่อมต่อระบบ...</h2>
         <p id="wifiScanSubtitle" class="text-sm font-medium text-slate-700">รอสักครู่ ระบบกำลังตรวจสอบข้อมูล</p>
+
+         <button type="button" onclick="speakMessage('ทดสอบระบบเสียง ทำงานปกติค่ะ')" class="w-full mt-3 py-3 rounded-2xl font-bold text-sm bg-purple-100 text-purple-700 hover:bg-purple-200 transition shadow-sm border border-purple-200">
+  <i class="fa-solid fa-volume-high mr-2"></i> ทดสอบเสียงพูด (แตะที่นี่)
+</button>
+        
       </div>
       
       <div class="bg-white/60 backdrop-blur-md rounded-2xl p-4 border border-white/60 text-sm space-y-2 text-left shadow-sm">
@@ -182,12 +187,7 @@
       <div id="wifiRetryBox" class="hidden pt-2 space-y-3">
         <button type="button" onclick="startWifiAutoCheckIn()" class="w-full py-3.5 rounded-2xl font-bold text-base bg-teal-600 hover:bg-teal-700 text-white shadow-xl transition active:scale-95"><i class="fa-solid fa-rotate-right mr-2"></i> ลองใหม่อีกครั้ง</button>
         <button type="button" onclick="closeScannerWindow()" class="w-full py-3 rounded-2xl font-bold text-sm bg-white/70 text-slate-700 hover:bg-white transition active:scale-95 shadow-sm border border-white/50">ปิดหน้าต่าง</button>
-      </div>
-
-      <button type="button" onclick="speakMessage('ทดสอบระบบเสียง ทำงานปกติค่ะ')" class="w-full mt-3 py-3 rounded-2xl font-bold text-sm bg-purple-100 text-purple-700 hover:bg-purple-200 transition shadow-sm border border-purple-200">
-  <i class="fa-solid fa-volume-high mr-2"></i> ทดสอบเสียงพูด (แตะที่นี่)
-</button>
-      
+      </div>        
     </div>
     
     <div id="adminBackBtnContainer" class="text-center mt-6 relative z-10">
