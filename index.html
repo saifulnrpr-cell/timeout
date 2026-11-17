@@ -157,6 +157,41 @@
 
   <div id="bgWatermarkLayer" style="opacity: 0.08;"></div>
 
+  <!-- โหมดหน้ายืนยันตัวตนก่อนลงเวลา (เพิ่มใหม่) -->
+<div id="profileConfirmApp" class="hidden fixed inset-0 z-[60] flex flex-col items-center bg-slate-100 bg-cover bg-center bg-no-repeat before:content-[''] before:absolute before:inset-0 before:bg-slate-900/20 backdrop-blur-sm" style="background-color: #f1f5f9;">
+  
+  <div class="w-full max-w-[92%] md:max-w-md bg-white/70 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] border border-white/60 p-8 text-center space-y-5 relative z-10 mt-[15vh] animate__animated animate__zoomIn animate__faster">
+    
+    <!-- เอฟเฟกต์แสงรอบรูปโปรไฟล์ -->
+    <div class="relative w-32 h-32 mx-auto mt-2">
+      <div class="absolute inset-0 bg-teal-400 rounded-full animate-ping blur-md opacity-40"></div>
+      <div class="absolute inset-0 bg-emerald-300 rounded-full animate-pulse blur-xl opacity-50"></div>
+      <img id="profileConfirmImg" src="https://placehold.co/150" class="relative w-32 h-32 rounded-full object-cover border-[4px] border-white shadow-xl z-10 bg-white">
+    </div>
+
+    <div class="space-y-1.5 pt-2">
+      <h2 id="profileConfirmName" class="text-2xl font-black text-slate-800 tracking-wide drop-shadow-sm">กำลังโหลดข้อมูล...</h2>
+      <div class="flex justify-center">
+        <span id="profileConfirmPosition" class="text-xs font-bold text-teal-800 bg-teal-100/80 px-4 py-1.5 rounded-full border border-teal-200 shadow-sm backdrop-blur-md">ตรวจสอบสิทธิ์...</span>
+      </div>
+    </div>
+
+    <!-- สเตตัสโหลด -->
+    <div id="profileLoadingIndicator" class="py-6 flex flex-col items-center justify-center space-y-3">
+       <i class="fa-solid fa-spinner fa-spin text-3xl text-teal-500"></i>
+       <p class="text-xs text-slate-500 font-medium">รอสักครู่ ระบบกำลังดึงข้อมูลจากฐานข้อมูล</p>
+    </div>
+
+    <!-- ปุ่มยืนยัน (ซ่อนไว้ก่อนจนกว่าจะโหลดชื่อเสร็จ) -->
+    <div id="btnConfirmProfile" class="hidden pt-4 pb-2">
+      <button type="button" onclick="unlockAndStartScan()" class="w-full py-4 rounded-2xl font-black text-[17px] bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white shadow-[0_10px_25px_rgba(13,148,136,0.4)] transition-all active:scale-95 flex items-center justify-center">
+        <i class="fa-solid fa-fingerprint text-2xl mr-2"></i> ยืนยันตัวตนเพื่อลงเวลา
+      </button>
+    </div>
+    
+  </div>
+</div>
+  
   <!-- โหมด 1: หน้าจอสแกนเช็ก Wi-Fi อัตโนมัติ (1-Click) -->
   <div id="wifiScannerApp" class="hidden fixed inset-0 z-50 flex flex-col items-center bg-slate-100 bg-cover bg-center bg-no-repeat before:content-[''] before:absolute before:inset-0 before:bg-black/5" style="background-color: #f1f5f9;">
     
@@ -1136,7 +1171,13 @@
         if (isLineApp) document.getElementById('leaveAdminBackBtn').classList.add('hidden');
         openLeaveFormMode();
       } else if (SERVER_INITIAL_MODE === 'scan' || SERVER_INITIAL_UID !== '' || isLineApp || searchDecoded.includes('liff')) {
-        document.getElementById('adminDashboardApp').classList.add('hidden');
+    
+    // --- เริ่มต้น Flow ใหม่ (เรียกใช้หน้ายืนยันตัวตน) ---
+    initProfileConfirmFlow();
+
+  } else {
+    document.getElementById('adminDashboardApp').classList.remove('hidden');
+        
         document.getElementById('leaveFormApp').classList.add('hidden');
         document.getElementById('wifiScannerApp').classList.remove('hidden');
         if (isLineApp) document.getElementById('adminBackBtnContainer').classList.add('hidden');
@@ -2939,6 +2980,98 @@
         );
       }
     }
+
+    async function initProfileConfirmFlow() {
+  // 1. ปิดหน้าจออื่นๆ และแสดงหน้ายืนยันตัวตน
+  document.getElementById('adminDashboardApp').classList.add('hidden');
+  document.getElementById('leaveFormApp').classList.add('hidden');
+  document.getElementById('wifiScannerApp').classList.add('hidden');
+  
+  const isLineApp = /Line/i.test(navigator.userAgent);
+  if (isLineApp) {
+     const adminBtn = document.getElementById('adminBackBtnContainer');
+     if(adminBtn) adminBtn.classList.add('hidden');
+  }
+
+  const confirmApp = document.getElementById('profileConfirmApp');
+  confirmApp.classList.remove('hidden');
+
+  // โหลดรูปพื้นหลังหน้าจอ
+  const cachedBg = localStorage.getItem('CACHED_SCANNER_BG');
+  if (cachedBg) confirmApp.style.backgroundImage = `url('${cachedBg}')`;
+
+  // อัปเดตรูปพื้นหลังจากฐานข้อมูลเบื้องหลัง
+  google.script.run.withSuccessHandler(function(s) {
+    if (s && s.bannerScanner) {
+      const newBgUrl = normalizeDriveUrl(s.bannerScanner);
+      if (newBgUrl !== cachedBg) {
+        confirmApp.style.backgroundImage = `url('${newBgUrl}')`;
+        localStorage.setItem('CACHED_SCANNER_BG', newBgUrl);
+      }
+    }
+  }).getAppSettings();
+
+  // 2. ดึงรูปโปรไฟล์ LINE
+  let uid = await tryGetLiffUserIdFast();
+  if (uid) {
+     currentLineUid = uid;
+     localStorage.setItem('ATTENDANCE_LINE_UID', uid);
+  }
+
+  let picUrl = localStorage.getItem('ATTENDANCE_LINE_PIC') || 'https://placehold.co/150/e2e8f0/94a3b8?text=User';
+  document.getElementById('profileConfirmImg').src = picUrl;
+
+  if (!currentLineUid) {
+    document.getElementById('profileConfirmName').innerText = 'ไม่พบข้อมูล LINE';
+    document.getElementById('profileConfirmPosition').innerText = 'กรุณาเปิดลิงก์ผ่านแอป LINE';
+    document.getElementById('profileLoadingIndicator').classList.add('hidden');
+    return;
+  }
+
+  // 3. ดึงชื่อ-สกุล และตำแหน่งจากฐานข้อมูล 
+  google.script.run.withSuccessHandler(function(info) {
+    if (info && info.found) {
+      currentSavedIdCard = info.idCard;
+      localStorage.setItem('ATTENDANCE_ID_CARD', info.idCard);
+      
+      document.getElementById('profileConfirmName').innerText = info.empName;
+      document.getElementById('profileConfirmPosition').innerText = info.position;
+      
+      // โชว์ปุ่มยืนยัน
+      document.getElementById('profileLoadingIndicator').classList.add('hidden');
+      document.getElementById('btnConfirmProfile').classList.remove('hidden');
+    } else {
+      document.getElementById('profileConfirmName').innerText = 'ยังไม่ได้ลงทะเบียน';
+      document.getElementById('profileConfirmPosition').innerText = 'โปรดพิมพ์เลขบัตรในช่องแชต LINE';
+      document.getElementById('profileLoadingIndicator').classList.add('hidden');
+    }
+  }).getEmployeeInfoForClient(currentLineUid, '');
+}
+
+function unlockAndStartScan() {
+  // 1. ปลดล็อกระบบเสียงทันทีที่นิ้วแตะปุ่ม
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const dummy = new SpeechSynthesisUtterance('');
+    dummy.volume = 0;
+    window.speechSynthesis.speak(dummy);
+  }
+  
+  // 2. สลับหน้าจอไปเริ่มสแกน IP/GPS เบื้องหลัง
+  const confirmApp = document.getElementById('profileConfirmApp');
+  const scannerApp = document.getElementById('wifiScannerApp');
+  
+  confirmApp.classList.add('animate__fadeOut'); // เฟดออกแบบนุ่มนวล
+  
+  setTimeout(() => {
+    confirmApp.classList.add('hidden');
+    scannerApp.classList.remove('hidden');
+    scannerApp.style.backgroundImage = confirmApp.style.backgroundImage;
+    
+    // 3. เริ่มกระบวนการสแกนและบันทึกเวลา
+    startWifiAutoCheckIn();
+  }, 300); // รอแอนิเมชันเสร็จ
+}
 
   </script>
 </body>
