@@ -1086,8 +1086,7 @@
         
         const retryBox = document.getElementById('wifiRetryBox');
         retryBox.classList.remove('hidden');
-        retryBox.innerHTML = '<button type="button" onclick="startWifiAutoCheckIn()" class="w-full py-4 rounded-2xl font-bold text-lg bg-teal-600 hover:bg-teal-700 text-white shadow-xl transition active:scale-95"><i class="fa-solid fa-fingerprint mr-2"></i> แตะเพื่อลงเวลาเข้า-ออกงาน</button>';
-
+        retryBox.innerHTML = '<button type="button" onclick="unlockVoiceAndStart()" class="w-full py-4 rounded-2xl font-bold text-lg bg-teal-600 hover:bg-teal-700 text-white shadow-xl transition active:scale-95"><i class="fa-solid fa-fingerprint mr-2"></i> แตะเพื่อลงเวลาเข้า-ออกงาน</button>';
       } else {
         document.getElementById('adminDashboardApp').classList.remove('hidden');
         const now = new Date();
@@ -2899,23 +2898,23 @@ function getRandomVoiceMessage(type, fullName) {
 
 function speakMessage(text) {
   if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel(); // ล้างคิวเสียงที่อาจจะค้างอยู่
-    
-    // สั่งกระตุ้นระบบเสียง (ช่วยแก้บั๊กเสียงไม่ยอมทำงานใน Android)
-    window.speechSynthesis.resume(); 
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'th-TH'; 
-    utterance.rate = 1.0;     
-    utterance.volume = 1.0;   
-    
-    // ดักจับ Error เผื่อเบราว์เซอร์ฟ้องว่าถูกบล็อก
-    utterance.onerror = function(e) {
-      console.error('Speech error:', e.error);
-    };
-
-    window.speechSynthesis.speak(utterance);
+    let speech = new SpeechSynthesisUtterance(text);
+    speech.lang = 'th-TH'; 
+    speech.rate = 1.0;     
+    speech.pitch = 1.0;    
+    window.speechSynthesis.speak(speech);
   }
+}
+
+    function unlockVoiceAndStart() {
+    // 1. ปลดล็อกระบบเสียงทันทีที่นิ้วแตะ (พูดข้อความว่างเปล่า)
+    if ('speechSynthesis' in window) {
+        let unlockSpeech = new SpeechSynthesisUtterance('');
+        window.speechSynthesis.speak(unlockSpeech);
+    }
+    
+    // 2. เริ่มกระบวนการลงเวลาตามปกติ
+    startWifiAutoCheckIn();
 }
 
   </script>
