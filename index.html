@@ -1122,6 +1122,47 @@ function speakMessage(type, empName = "") {
   utterance.pitch = 1.1;
   window.speechSynthesis.speak(utterance);
 }
+
+    // ----------------------------------------------------
+    // 2. ฟังก์ชันโหลดการทำงานเมื่อเปิดเว็บ
+    // ----------------------------------------------------
+    window.onload = function() {
+      if (SERVER_INITIAL_UID) {
+        localStorage.setItem('ATTENDANCE_LINE_UID', SERVER_INITIAL_UID);
+      }
+
+      const isLineApp = /Line/i.test(navigator.userAgent);
+      const searchDecoded = decodeURIComponent(window.location.search || '');
+
+      if (SERVER_INITIAL_MODE === 'leave' || searchDecoded.includes('mode=leave')) {
+        if (isLineApp) document.getElementById('leaveAdminBackBtn').classList.add('hidden');
+        openLeaveFormMode();
+      } else if (SERVER_INITIAL_MODE === 'scan' || SERVER_INITIAL_UID !== '' || isLineApp || searchDecoded.includes('liff')) {
+        
+        // --- เริ่มต้น Flow ใหม่ (เรียกใช้หน้ายืนยันตัวตน) ---
+        initProfileConfirmFlow();
+
+      } else {
+        document.getElementById('adminDashboardApp').classList.remove('hidden');
+        const now = new Date();
+        const currentMonthVal = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        document.getElementById('reportMonth').value = currentMonthVal;
+        document.getElementById('shiftMonthPicker').value = currentMonthVal;
+        
+        updateAdminLockVisual();
+        loadSystemSettings();
+        loadEmployees();
+        loadHolidays();
+        loadShiftMasterSettings();
+        loadReminderStatus();
+        fetchClientPublicIp().then(function(ip) {
+          document.getElementById('adminCurrentIpBadge').innerText = ip || 'ไม่พบค่า';
+        });
+        
+        switchTab('tab-dashboard');
+        loadDashboardData(); 
+      }
+    };
    
 
     function getLocalIsoDate(offsetDays) {
