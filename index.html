@@ -1091,8 +1091,17 @@
       }
 
       // สุ่มข้อความ
-      const randomIndex = Math.floor(Math.random() * messages.length);
-      const textToSpeak = messages[randomIndex];
+      const textToSpeak = messages[Math.floor(Math.random() * messages.length)];
+
+      // ใช้ setTimeout หน่วงเวลาเล็กน้อย (แก้บั๊ก iOS/Safari ที่มักจะตัดเสียงทิ้งถ้าสั่งทำงานทันทีหลังโหลดข้อมูลเสร็จ)
+      setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = 'th-TH';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.1;
+        window.speechSynthesis.speak(utterance);
+      }, 300); // หน่วงเวลา 0.3 วินาที
+    }
 
       // ยกเลิกเสียงที่กำลังพูดค้างอยู่ (ถ้ามี)
       window.speechSynthesis.cancel();
@@ -1103,6 +1112,23 @@
       utterance.pitch = 1.1; // โทนเสียง (ปรับให้สูงขึ้นเล็กน้อยเพื่อให้ดูสดใส)
       
       window.speechSynthesis.speak(utterance);
+    }
+
+    // 🟢 1. แก้ไขฟังก์ชันปลดล็อก (เปิดช่องสัญญาณเสียงทันทีที่กดปุ่ม)
+    function unlockAndStartScan() {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // ล้างคิวที่อาจค้างอยู่
+        // แกล้งสั่งให้ระบบพูดข้อความสั้นๆ แบบปิดเสียง เพื่อกระตุ้นสิทธิ์การเล่นเสียง
+        const dummy = new SpeechSynthesisUtterance('เปิดระบบ'); 
+        dummy.volume = 0; // ปิดเสียง
+        dummy.rate = 2.0; // พูดให้จบไวๆ
+        window.speechSynthesis.speak(dummy);
+      }
+      
+      document.getElementById('wifiRetryBox').classList.add('hidden');
+      document.getElementById('wifiScanIcon').className = "fa-solid fa-wifi fa-beat-fade";
+      
+      startWifiAutoCheckIn();
     }
 
     window.onload = function() {
