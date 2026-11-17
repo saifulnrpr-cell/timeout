@@ -1483,7 +1483,7 @@
           </div>
         `,
         icon: 'success',
-        timer: 5000, // ตั้งเวลา 5 วินาที (5000 ms)
+        timer: 8000, // ตั้งเวลา 5 วินาที (5000 ms)
         timerProgressBar: true, // เปิดหลอดวิ่งด้านล่าง
         showConfirmButton: false, // ซ่อนปุ่ม OK
         allowOutsideClick: false, // ห้ามกดคลิกข้างนอกเพื่อปิด
@@ -1631,12 +1631,26 @@
           return;
         }
 
-        // 4. บันทึกข้อมูลสำเร็จ (โชว์สถานะเครือข่าย หรือ GPS)
+       // 4. บันทึกข้อมูลสำเร็จ (โชว์สถานะเครือข่าย หรือ GPS)
         if (res.success) {
           updateWifiVisual('success', 'บันทึก' + res.actionType + 'สำเร็จ!', res.empName + ' • ' + res.time + ' น.');
           document.getElementById('officeIpStatusText').innerText = res.clientIp ? `✅ เครือข่ายตรง` : `📍 GPS (ในระยะ)`;
           document.getElementById('officeIpStatusText').className = 'font-bold text-emerald-600';
           
+          // --- [เพิ่มโค้ดส่วนนี้] ดึงเสียงพูดตามสถานะการลงเวลา ---
+          let voiceType = '';
+          if (res.actionType === 'เข้างาน') {
+            voiceType = (res.status === 'สาย' || res.status === 'มาสาย') ? 'IN_LATE' : 'IN_NORMAL';
+          } else if (res.actionType === 'ออกงาน') {
+            voiceType = 'OUT';
+          }
+          
+          if (voiceType !== '') {
+             const textToSpeak = getRandomVoiceMessage(voiceType, res.empName);
+             speakMessage(textToSpeak);
+          }
+          // ---------------------------------------------
+
           // เรียกใช้ Pop-up นับถอยหลัง 5 วินาที
           showSuccessCountdown(
             `บันทึก${res.actionType}สำเร็จ!`, 
@@ -2842,6 +2856,52 @@
         );
       }
     }
+
+    // ฟังก์ชันสุ่มข้อความเสียงตามสถานะ
+function getRandomVoiceMessage(type, fullName) {
+  // ตัดคำนำหน้าออกเพื่อให้เสียงอ่านฟังดูเป็นธรรมชาติและเป็นกันเองมากขึ้น
+  const empName = fullName.replace(/^(นาย|นางสาว|นาง|น\.ส\.|ด\.ต\.|ส\.ต\.ท\.)\s*/, '');
+  
+  let phrases = [];
+  if (type === 'IN_NORMAL') {
+    phrases = [
+      `${empName} เข้างานสำเร็จค่ะ ขอบคุณค่ะ`,
+      `บันทึกเวลา ${empName} เรียบร้อยค่ะ เริ่มต้นวันทำงานกันเลยค่ะ`,
+      `ลงเวลาเรียบร้อยแล้วค่ะ ${empName} ขอให้สนุกกับการทำงานนะคะ`,
+      `สวัสดีค่ะ ${empName} เข้างานสำเร็จค่ะ`
+    ];
+  } else if (type === 'IN_LATE') {
+    phrases = [
+      `บันทึกเวลาเรียบร้อยค่ะ วันนี้ ${empName} เข้างานสายนะคะ`,
+      `บันทึกสำเร็จค่ะ ${empName} ขอความร่วมมือเข้างานให้ตรงเวลานะคะ`
+    ];
+  } else if (type === 'OUT') {
+    phrases = [
+      `${empName} ออกงานสำเร็จค่ะ ขอบคุณค่ะ`,
+      `บันทึกเวลาออกงานเรียบร้อยค่ะ ${empName} แล้วพบกันใหม่นะคะ`,
+      `ลงเวลาเรียบร้อยค่ะ ${empName} กลับบ้านปลอดภัยนะคะ`,
+      `ระบบบันทึกเวลาออกงาน ${empName} สำเร็จค่ะ`
+    ];
+  }
+  
+  const randomIndex = Math.floor(Math.random() * phrases.length);
+  return phrases[randomIndex];
+}
+
+// ฟังก์ชันสั่งเบราว์เซอร์ให้อ่านออกเสียงภาษาไทย
+function speakMessage(text) {
+  if ('speechSynthesis' in window) {
+    // ยกเลิกเสียงที่อาจจะค้างอยู่ก่อนหน้า
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'th-TH'; // กำหนดให้เป็นเสียงภาษาไทย
+    utterance.rate = 1.0;     // ความเร็วเสียงปกติ (ปรับลด-เพิ่มได้ 0.1 - 2.0)
+    utterance.volume = 1.0;   // ระดับความดังสูงสุด
+    
+    window.speechSynthesis.speak(utterance);
+  }
+}
 
   </script>
 </body>
