@@ -2965,6 +2965,9 @@
     function speakMessage(type, empName = "") {
       if (!('speechSynthesis' in window)) return;
 
+      // 🔴 สำคัญมาก: เคลียร์คิวเสียงที่ค้างอยู่ก่อนเริ่มพูดคำใหม่ ป้องกันบั๊กเสียงหายใน LIFF/iOS
+      window.speechSynthesis.cancel();
+
       let messages = [];
       const cleanName = empName.replace(/^(นาย|นางสาว|นาง|น\.ส\.|ด\.ต\.|ส\.ต\.ท\.)\s*/, '');
       
@@ -2996,11 +2999,14 @@
 
       const textToSpeak = messages[Math.floor(Math.random() * messages.length)];
 
-      // ใช้โค้ดแบบเดียวกับแอปเบิกจ่ายเป๊ะๆ (สั่งพูดตรงๆ ไม่มี setTimeout)
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.lang = 'th-TH';
       utterance.rate = 1.0;
       utterance.pitch = 1.1;
+      
+      // ดัก Error ป้องกันระบบหยุดทำงานหากเกิดข้อผิดพลาดในการเล่นเสียง
+      utterance.onerror = function(e) { console.warn('TTS Error:', e); };
+
       window.speechSynthesis.speak(utterance);
     }
 
@@ -3008,6 +3014,14 @@
     // 3. ฟังก์ชันสลับหน้าจอ (เอา Dummy Audio ออกเพราะย้ายไปข้อ 1 แล้ว)
     // ----------------------------------------------------
     function unlockAndStartScan() {
+      // 🔴 เพิ่มการปลดล็อกเสียงตรงนี้ เพื่อผูกกับ Action การกดปุ่มโดยตรง (ต่ออายุ Context)
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const dummy = new SpeechSynthesisUtterance('');
+        dummy.volume = 0;
+        window.speechSynthesis.speak(dummy);
+      }
+
       const confirmApp = document.getElementById('profileConfirmApp');
       const scannerApp = document.getElementById('wifiScannerApp');
       
