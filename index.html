@@ -1160,70 +1160,42 @@
     }
 
     window.onload = function() {
-      if (SERVER_INITIAL_UID) {
-        localStorage.setItem('ATTENDANCE_LINE_UID', SERVER_INITIAL_UID);
-      }
+  if (SERVER_INITIAL_UID) {
+    localStorage.setItem('ATTENDANCE_LINE_UID', SERVER_INITIAL_UID);
+  }
 
-      const isLineApp = /Line/i.test(navigator.userAgent);
-      const searchDecoded = decodeURIComponent(window.location.search || '');
+  const isLineApp = /Line/i.test(navigator.userAgent);
+  const searchDecoded = decodeURIComponent(window.location.search || '');
 
-      if (SERVER_INITIAL_MODE === 'leave' || searchDecoded.includes('mode=leave')) {
-        if (isLineApp) document.getElementById('leaveAdminBackBtn').classList.add('hidden');
-        openLeaveFormMode();
-      } else if (SERVER_INITIAL_MODE === 'scan' || SERVER_INITIAL_UID !== '' || isLineApp || searchDecoded.includes('liff')) {
+  if (SERVER_INITIAL_MODE === 'leave' || searchDecoded.includes('mode=leave')) {
+    if (isLineApp) document.getElementById('leaveAdminBackBtn').classList.add('hidden');
+    openLeaveFormMode();
+  } else if (SERVER_INITIAL_MODE === 'scan' || SERVER_INITIAL_UID !== '' || isLineApp || searchDecoded.includes('liff')) {
     
-    // --- เริ่มต้น Flow ใหม่ (เรียกใช้หน้ายืนยันตัวตน) ---
+    // --- เรียกใช้งาน Flow หน้ายืนยันตัวตน ---
     initProfileConfirmFlow();
 
   } else {
     document.getElementById('adminDashboardApp').classList.remove('hidden');
-        
-        document.getElementById('leaveFormApp').classList.add('hidden');
-        document.getElementById('wifiScannerApp').classList.remove('hidden');
-        if (isLineApp) document.getElementById('adminBackBtnContainer').classList.add('hidden');
-        
-        // 1. โหลดรูปล่าสุดที่จำไว้ในเครื่อง (Cache) ขึ้นมาโชว์ทันที (ใช้เวลา 0.1 วินาที)
-        const cachedBg = localStorage.getItem('CACHED_SCANNER_BG');
-        if (cachedBg) {
-          document.getElementById('wifiScannerApp').style.backgroundImage = `url('${cachedBg}')`;
-        }
-
-        // 2. แอบไปเช็กข้อมูลใหม่แบบหลังบ้าน เผื่อแอดมินเปลี่ยนรูปพื้นหลัง
-        google.script.run.withSuccessHandler(function(s) {
-          if (s && s.bannerScanner) {
-            const newBgUrl = normalizeDriveUrl(s.bannerScanner);
-            // ถ้าลิงก์รูปไม่ตรงกับที่จำไว้ ให้เปลี่ยนรูปและจำค่าใหม่
-            if (newBgUrl !== cachedBg) {
-              document.getElementById('wifiScannerApp').style.backgroundImage = `url('${newBgUrl}')`;
-              localStorage.setItem('CACHED_SCANNER_BG', newBgUrl);
-            }
-          }
-        }).getAppSettings();
-
-        // 3. เริ่มสแกน Wi-Fi ทันทีโดยไม่ต้องรอรูป
-        startWifiAutoCheckIn();
-      } else {
-        document.getElementById('adminDashboardApp').classList.remove('hidden');
-        const now = new Date();
-        const currentMonthVal = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-        document.getElementById('reportMonth').value = currentMonthVal;
-        document.getElementById('shiftMonthPicker').value = currentMonthVal;
-        
-        updateAdminLockVisual();
-        loadSystemSettings();
-        loadEmployees();
-        loadHolidays();
-        loadShiftMasterSettings();
-        loadReminderStatus();
-        fetchClientPublicIp().then(function(ip) {
-          document.getElementById('adminCurrentIpBadge').innerText = ip || 'ไม่พบค่า';
-        });
-        
-        switchTab('tab-dashboard');
-        loadDashboardData(); // โหลดข้อมูลแดชบอร์ดทันที
-      }
-    };
-
+    const now = new Date();
+    const currentMonthVal = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    document.getElementById('reportMonth').value = currentMonthVal;
+    document.getElementById('shiftMonthPicker').value = currentMonthVal;
+    
+    updateAdminLockVisual();
+    loadSystemSettings();
+    loadEmployees();
+    loadHolidays();
+    loadShiftMasterSettings();
+    loadReminderStatus();
+    fetchClientPublicIp().then(function(ip) {
+      document.getElementById('adminCurrentIpBadge').innerText = ip || 'ไม่พบค่า';
+    });
+    
+    switchTab('tab-dashboard');
+    loadDashboardData(); 
+  }
+};
     function getLocalIsoDate(offsetDays) {
       const d = new Date();
       d.setDate(d.getDate() + (offsetDays || 0));
