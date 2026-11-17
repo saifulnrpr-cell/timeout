@@ -1077,61 +1077,45 @@
     let adminSystemPassword = '123456';
     let isAdminUnlocked = sessionStorage.getItem('ADMIN_UNLOCKED_SESSION') === 'true';
 
-   // 🟢 โค้ดระบบเสียงพูด Web Speech API (Text-to-Speech)
-    function unlockAudio() {
-      // ปลดล็อกการใช้เสียงพูดบนมือถือ (iOS/Android) ทันทีที่แตะหน้าจอ
-      if ('speechSynthesis' in window) {
-        const dummy = new SpeechSynthesisUtterance('');
-        dummy.volume = 0;
-        window.speechSynthesis.speak(dummy);
-      }
-    }
-    
-    document.addEventListener('touchstart', unlockAudio, { once: true });
-    document.addEventListener('click', unlockAudio, { once: true });
-
-    function speakMessage(type, empName = "") {
+    // 🟢 โค้ดระบบเสียงพูด Web Speech API (Text-to-Speech)
+function speakMessage(type, empName = "") {
   if (!('speechSynthesis' in window)) {
     console.warn("บราวเซอร์นี้ไม่รองรับระบบอ่านออกเสียง");
     return;
   }
 
   let messages = [];
+  const cleanName = empName.replace(/^(นาย|นางสาว|นาง|น\.ส\.|ด\.ต\.|ส\.ต\.ท\.)\s*/, '');
   
   if (type === 'IN_NORMAL') {
     messages = [
-      `${empName} เข้างานสำเร็จค่ะ ขอบคุณค่ะ`,
-      `บันทึกเวลา ${empName} เรียบร้อยค่ะ เริ่มต้นวันทำงานกันเลยค่ะ`,
-      `ลงเวลาเรียบร้อยแล้วค่ะ ${empName} ขอให้สนุกกับการทำงานนะคะ`,
-      `สวัสดีค่ะ ${empName} เข้างานสำเร็จค่ะ`
+      `${cleanName} เข้างานสำเร็จค่ะ ขอบคุณค่ะ`,
+      `บันทึกเวลา ${cleanName} เรียบร้อยค่ะ เริ่มต้นวันทำงานกันเลยค่ะ`,
+      `ลงเวลาเรียบร้อยแล้วค่ะ ${cleanName} ขอให้สนุกกับการทำงานนะคะ`,
+      `สวัสดีค่ะ ${cleanName} เข้างานสำเร็จค่ะ`
     ];
   } else if (type === 'IN_LATE') {
     messages = [
-      `บันทึกเวลาเรียบร้อยค่ะ วันนี้ ${empName} เข้างานสายนะคะ`,
-      `บันทึกสำเร็จค่ะ ${empName} ขอความร่วมมือเข้างานให้ตรงเวลานะคะ`
+      `บันทึกเวลาเรียบร้อยค่ะ วันนี้ ${cleanName} เข้างานสายนะคะ`,
+      `บันทึกสำเร็จค่ะ ${cleanName} ขอความร่วมมือเข้างานให้ตรงเวลานะคะ`
     ];
   } else if (type === 'OUT') {
     messages = [
-      `${empName} ออกงานสำเร็จค่ะ ขอบคุณค่ะ`,
-      `บันทึกเวลาออกงานเรียบร้อยค่ะ ${empName} แล้วพบกันใหม่นะคะ`,
-      `ลงเวลาเรียบร้อยค่ะ ${empName} กลับบ้านปลอดภัยนะคะ`,
-      `ระบบบันทึกเวลาออกงาน ${empName} สำเร็จค่ะ`
+      `${cleanName} ออกงานสำเร็จค่ะ ขอบคุณค่ะ`,
+      `บันทึกเวลาออกงานเรียบร้อยค่ะ ${cleanName} แล้วพบกันใหม่นะคะ`,
+      `ลงเวลาเรียบร้อยค่ะ ${cleanName} กลับบ้านปลอดภัยนะคะ`,
+      `ระบบบันทึกเวลาออกงาน ${cleanName} สำเร็จค่ะ`
     ];
   } else if (type === 'ERROR') {
     messages = [
       "บันทึกข้อมูลไม่สำเร็จค่ะ กรุณาลองใหม่อีกครั้งนะคะ",
-      "เกิดข้อผิดพลาดในการบันทึกเวลาค่ะ กรุณาตรวจสอบอินเทอร์เน็ต",
-      "ระบบไม่สามารถบันทึกข้อมูลได้ค่ะ กรุณาติดต่อผู้ดูแลระบบนะคะ"
+      "ระบบไม่สามารถบันทึกข้อมูลได้ค่ะ กรุณาตรวจสอบอินเทอร์เน็ต"
     ];
   }
 
-  // สุ่มข้อความ
   const textToSpeak = messages[Math.floor(Math.random() * messages.length)];
 
-  // ยกเลิกเสียงที่กำลังพูดค้างอยู่ (ถ้ามี) ก่อนเริ่มพูดใหม่
   window.speechSynthesis.cancel();
-
-  // ใช้ setTimeout หน่วงเวลาเล็กน้อยแก้บั๊ก iOS/Safari
   setTimeout(() => {
     const utterance = new SpeechSynthesisUtterance(textToSpeak);
     utterance.lang = 'th-TH';
@@ -1140,62 +1124,8 @@
     window.speechSynthesis.speak(utterance);
   }, 300);
 }
-  
+   
 
-    // 🟢 1. แก้ไขฟังก์ชันปลดล็อก (เปิดช่องสัญญาณเสียงทันทีที่กดปุ่ม)
-    function unlockAndStartScan() {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // ล้างคิวที่อาจค้างอยู่
-        // แกล้งสั่งให้ระบบพูดข้อความสั้นๆ แบบปิดเสียง เพื่อกระตุ้นสิทธิ์การเล่นเสียง
-        const dummy = new SpeechSynthesisUtterance('เปิดระบบ'); 
-        dummy.volume = 0; // ปิดเสียง
-        dummy.rate = 2.0; // พูดให้จบไวๆ
-        window.speechSynthesis.speak(dummy);
-      }
-      
-      document.getElementById('wifiRetryBox').classList.add('hidden');
-      document.getElementById('wifiScanIcon').className = "fa-solid fa-wifi fa-beat-fade";
-      
-      startWifiAutoCheckIn();
-    }
-
-    window.onload = function() {
-  if (SERVER_INITIAL_UID) {
-    localStorage.setItem('ATTENDANCE_LINE_UID', SERVER_INITIAL_UID);
-  }
-
-  const isLineApp = /Line/i.test(navigator.userAgent);
-  const searchDecoded = decodeURIComponent(window.location.search || '');
-
-  if (SERVER_INITIAL_MODE === 'leave' || searchDecoded.includes('mode=leave')) {
-    if (isLineApp) document.getElementById('leaveAdminBackBtn').classList.add('hidden');
-    openLeaveFormMode();
-  } else if (SERVER_INITIAL_MODE === 'scan' || SERVER_INITIAL_UID !== '' || isLineApp || searchDecoded.includes('liff')) {
-    
-    // --- เรียกใช้งาน Flow หน้ายืนยันตัวตน ---
-    initProfileConfirmFlow();
-
-  } else {
-    document.getElementById('adminDashboardApp').classList.remove('hidden');
-    const now = new Date();
-    const currentMonthVal = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
-    document.getElementById('reportMonth').value = currentMonthVal;
-    document.getElementById('shiftMonthPicker').value = currentMonthVal;
-    
-    updateAdminLockVisual();
-    loadSystemSettings();
-    loadEmployees();
-    loadHolidays();
-    loadShiftMasterSettings();
-    loadReminderStatus();
-    fetchClientPublicIp().then(function(ip) {
-      document.getElementById('adminCurrentIpBadge').innerText = ip || 'ไม่พบค่า';
-    });
-    
-    switchTab('tab-dashboard');
-    loadDashboardData(); 
-  }
-};
     function getLocalIsoDate(offsetDays) {
       const d = new Date();
       d.setDate(d.getDate() + (offsetDays || 0));
