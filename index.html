@@ -1357,26 +1357,61 @@
         document.getElementById('wifiScannerApp').classList.remove('hidden');
         if (isLineApp) document.getElementById('adminBackBtnContainer').classList.add('hidden');
         
-        // 1. โหลดรูปล่าสุดที่จำไว้ในเครื่อง (Cache) ขึ้นมาโชว์ทันที (ใช้เวลา 0.1 วินาที)
         const cachedBg = localStorage.getItem('CACHED_SCANNER_BG');
         if (cachedBg) {
           document.getElementById('wifiScannerApp').style.backgroundImage = `url('${cachedBg}')`;
         }
 
-        // 2. แอบไปเช็กข้อมูลใหม่แบบหลังบ้าน เผื่อแอดมินเปลี่ยนรูปพื้นหลัง
+        // 🟢 1. โหลดข้อมูลภาพพื้นหลังและ URL เสียงล่วงหน้า
         google.script.run.withSuccessHandler(function(s) {
-          if (s && s.bannerScanner) {
-            const newBgUrl = normalizeDriveUrl(s.bannerScanner);
-            // ถ้าลิงก์รูปไม่ตรงกับที่จำไว้ ให้เปลี่ยนรูปและจำค่าใหม่
-            if (newBgUrl !== cachedBg) {
-              document.getElementById('wifiScannerApp').style.backgroundImage = `url('${newBgUrl}')`;
-              localStorage.setItem('CACHED_SCANNER_BG', newBgUrl);
+          if (s) {
+            if (s.bannerScanner) {
+              const newBgUrl = normalizeDriveUrl(s.bannerScanner);
+              if (newBgUrl !== cachedBg) {
+                document.getElementById('wifiScannerApp').style.backgroundImage = `url('${newBgUrl}')`;
+                localStorage.setItem('CACHED_SCANNER_BG', newBgUrl);
+              }
             }
+            // เก็บ URL เสียงลงตัวแปร
+            appSounds = {
+              normal: s.soundCheckInNormal || '',
+              late: s.soundCheckInLate || '',
+              checkout: s.soundCheckOut || '',
+              error: s.soundError || ''
+            };
+            preloadLiffAudio();
           }
         }).getAppSettings();
 
-        // 3. เริ่มสแกน Wi-Fi ทันทีโดยไม่ต้องรอรูป
-        startWifiAutoCheckIn();
+        // 🟢 2. เปลี่ยนจากสแกนอัตโนมัติ เป็น "รอให้ผู้ใช้แตะเพื่อเริ่ม" เพื่อปลดล็อกเสียง
+        document.getElementById('wifiScanTitle').innerText = "พร้อมลงเวลา";
+        document.getElementById('wifiScanSubtitle').innerText = "แตะที่ไอคอนตรงกลางเพื่อสแกนและเปิดเสียง";
+        
+        const icon = document.getElementById('wifiScanIcon');
+        icon.className = "fa-solid fa-fingerprint fa-beat"; // เปลี่ยนเป็นรูปลายนิ้วมือ
+        
+        const box = document.getElementById('wifiScanIconBox');
+        box.className = "w-32 h-32 rounded-full bg-teal-600 text-white flex items-center justify-center text-6xl mx-auto border-4 border-white shadow-xl cursor-pointer hover:scale-105 transition";
+        
+        box.onclick = function() {
+           this.onclick = null; // ป้องกันการกดเบิ้ลซ้ำ
+           
+           // เล่นเสียงจำลองแบบเงียบๆ ทันทีที่แตะหน้าจอ เพื่อปลดล็อกข้อจำกัดของ iOS/Android
+           for (let k in liffAudioElements) {
+             if (liffAudioElements[k]) {
+                let p = liffAudioElements[k].play();
+                if(p !== undefined) {
+                   p.then(() => {
+                      liffAudioElements[k].pause();
+                      liffAudioElements[k].currentTime = 0;
+                   }).catch(e => {});
+                }
+             }
+           }
+           
+           startWifiAutoCheckIn(); // เริ่มสแกนจริง
+        };
+
       } else {
         document.getElementById('adminDashboardApp').classList.remove('hidden');
         const now = new Date();
@@ -1395,7 +1430,7 @@
         });
         
         switchTab('tab-dashboard');
-        loadDashboardData(); // โหลดข้อมูลแดชบอร์ดทันที
+        loadDashboardData(); 
       }
     };
 
@@ -1817,7 +1852,6 @@
     }
 
     async function startWifiAutoCheckIn() {
-      preloadLiffAudio(); // 🟢 สั่งโหลดเสียงล่วงหน้าก่อนสแกน
       document.getElementById('wifiRetryBox').classList.add('hidden');
       updateWifiVisual('scanning', 'กำลังดึงข้อมูล LINE...', 'รอสักครู่...');
 
@@ -1828,6 +1862,7 @@
       }
 
       if (!currentLineUid) {
+        playLiffAudio('error');
         updateWifiVisual('error', 'เชื่อมต่อ LINE ไม่สำเร็จ', 'กรุณาเปิดจากในแอป LINE หรือเน็ตอาจจะช้าเกินไป');
         document.getElementById('wifiRetryBox').classList.remove('hidden');
         return;
@@ -1838,6 +1873,7 @@
       document.getElementById('clientIpText').innerText = detectedPublicIp || 'ไม่พบ IP';
 
       if (!detectedPublicIp && SERVER_ENABLE_IP) {
+        playLiffAudio('error');
         updateWifiVisual('error', 'ตรวจสอบเครือข่ายไม่ได้', 'กรุณาเช็กอินเทอร์เน็ตของคุณ');
         document.getElementById('wifiRetryBox').classList.remove('hidden');
         return;
