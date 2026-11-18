@@ -2961,6 +2961,27 @@
       }
     }
 
+    function updateWifiVisual(state, title, subtitle) {
+      const box = document.getElementById('wifiScanIconBox');
+      const icon = document.getElementById('wifiScanIcon');
+      document.getElementById('wifiScanTitle').innerText = title;
+      document.getElementById('wifiScanSubtitle').innerText = subtitle;
+
+      if (state === 'scanning') {
+        box.className = "w-20 h-20 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center text-3xl mx-auto wifi-circle border-2 border-teal-200";
+        icon.className = "fa-solid fa-wifi fa-beat-fade";
+      } else if (state === 'success') {
+        box.className = "w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-4xl mx-auto border-2 border-emerald-300";
+        icon.className = "fa-solid fa-circle-check";
+      } else if (state === 'warning') {
+        box.className = "w-20 h-20 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-3xl mx-auto border-2 border-amber-300";
+        icon.className = "fa-solid fa-circle-info";
+      } else {
+        box.className = "w-20 h-20 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-3xl mx-auto border-2 border-rose-300";
+        icon.className = "fa-solid fa-triangle-exclamation";
+      }
+    }
+
 
 
   </script>
