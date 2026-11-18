@@ -815,72 +815,6 @@
               </div>
             </div>
 
-            <!-- 🟢 เพิ่มหมวดหมู่ตั้งค่าเสียง MP3 -->
-<div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-  <h2 class="text-lg font-semibold theme-text border-b pb-3 mb-2 flex items-center">
-    <i class="fa-solid fa-music mr-2"></i> 4. ตั้งค่าเสียงแจ้งเตือน MP3 (หน้าสแกน LIFF)
-  </h2>
-  <p class="text-xs text-slate-500 mb-4">แนะนำให้ใช้ไฟล์ .mp3 ความยาว 1-3 วินาที ขนาดไม่เกิน 3MB เพื่อการโหลดที่รวดเร็วบนมือถือ</p>
-  
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <!-- ช่อง 1 -->
-    <div class="p-4 rounded-xl border border-teal-200 bg-teal-50/30 space-y-2.5">
-      <span class="text-sm font-semibold text-teal-800 block">1. เสียงบันทึกเข้างานสำเร็จ (ปกติ)</span>
-      <input type="text" id="set-soundCheckInNormal" placeholder="ยังไม่มีไฟล์เสียง..." class="w-full px-3 py-1.5 text-xs border border-teal-200 rounded-lg bg-white" readonly>
-      <div class="flex gap-2">
-        <label class="flex-1 inline-flex justify-center items-center px-3 py-1.5 bg-white border border-teal-300 text-teal-700 text-xs font-medium rounded-lg cursor-pointer hover:bg-teal-100 transition">
-          <i class="fa-solid fa-upload mr-1.5"></i> อัปโหลด MP3
-          <input type="file" accept="audio/mp3,audio/mpeg" class="hidden" onchange="handleAudioUpload(this, 'set-soundCheckInNormal')">
-        </label>
-        <button type="button" onclick="testPlaySound('set-soundCheckInNormal')" class="px-3 py-1.5 bg-teal-600 text-white text-xs font-medium rounded-lg shadow-sm hover:bg-teal-700"><i class="fa-solid fa-play"></i></button>
-        <button type="button" onclick="document.getElementById('set-soundCheckInNormal').value=''" class="px-3 py-1.5 bg-slate-200 text-slate-600 text-xs font-medium rounded-lg"><i class="fa-solid fa-trash-can"></i></button>
-      </div>
-    </div>
-    
-    <!-- ช่อง 2 -->
-    <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/30 space-y-2.5">
-      <span class="text-sm font-semibold text-amber-800 block">2. เสียงบันทึกเข้างานสำเร็จ (มาสาย)</span>
-      <input type="text" id="set-soundCheckInLate" placeholder="ยังไม่มีไฟล์เสียง..." class="w-full px-3 py-1.5 text-xs border border-amber-200 rounded-lg bg-white" readonly>
-      <div class="flex gap-2">
-        <label class="flex-1 inline-flex justify-center items-center px-3 py-1.5 bg-white border border-amber-300 text-amber-700 text-xs font-medium rounded-lg cursor-pointer hover:bg-amber-100 transition">
-          <i class="fa-solid fa-upload mr-1.5"></i> อัปโหลด MP3
-          <input type="file" accept="audio/mp3,audio/mpeg" class="hidden" onchange="handleAudioUpload(this, 'set-soundCheckInLate')">
-        </label>
-        <button type="button" onclick="testPlaySound('set-soundCheckInLate')" class="px-3 py-1.5 bg-amber-500 text-white text-xs font-medium rounded-lg shadow-sm hover:bg-amber-600"><i class="fa-solid fa-play"></i></button>
-        <button type="button" onclick="document.getElementById('set-soundCheckInLate').value=''" class="px-3 py-1.5 bg-slate-200 text-slate-600 text-xs font-medium rounded-lg"><i class="fa-solid fa-trash-can"></i></button>
-      </div>
-    </div>
-
-    <!-- ช่อง 3 -->
-    <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/30 space-y-2.5">
-      <span class="text-sm font-semibold text-blue-800 block">3. เสียงบันทึกออกงานสำเร็จ</span>
-      <input type="text" id="set-soundCheckOut" placeholder="ยังไม่มีไฟล์เสียง..." class="w-full px-3 py-1.5 text-xs border border-blue-200 rounded-lg bg-white" readonly>
-      <div class="flex gap-2">
-        <label class="flex-1 inline-flex justify-center items-center px-3 py-1.5 bg-white border border-blue-300 text-blue-700 text-xs font-medium rounded-lg cursor-pointer hover:bg-blue-100 transition">
-          <i class="fa-solid fa-upload mr-1.5"></i> อัปโหลด MP3
-          <input type="file" accept="audio/mp3,audio/mpeg" class="hidden" onchange="handleAudioUpload(this, 'set-soundCheckOut')">
-        </label>
-        <button type="button" onclick="testPlaySound('set-soundCheckOut')" class="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg shadow-sm hover:bg-blue-700"><i class="fa-solid fa-play"></i></button>
-        <button type="button" onclick="document.getElementById('set-soundCheckOut').value=''" class="px-3 py-1.5 bg-slate-200 text-slate-600 text-xs font-medium rounded-lg"><i class="fa-solid fa-trash-can"></i></button>
-      </div>
-    </div>
-
-    <!-- ช่อง 4 -->
-    <div class="p-4 rounded-xl border border-rose-200 bg-rose-50/30 space-y-2.5">
-      <span class="text-sm font-semibold text-rose-800 block">4. เสียงระบบขัดข้อง / แจ้งเตือนข้อผิดพลาด</span>
-      <input type="text" id="set-soundError" placeholder="ยังไม่มีไฟล์เสียง..." class="w-full px-3 py-1.5 text-xs border border-rose-200 rounded-lg bg-white" readonly>
-      <div class="flex gap-2">
-        <label class="flex-1 inline-flex justify-center items-center px-3 py-1.5 bg-white border border-rose-300 text-rose-700 text-xs font-medium rounded-lg cursor-pointer hover:bg-rose-100 transition">
-          <i class="fa-solid fa-upload mr-1.5"></i> อัปโหลด MP3
-          <input type="file" accept="audio/mp3,audio/mpeg" class="hidden" onchange="handleAudioUpload(this, 'set-soundError')">
-        </label>
-        <button type="button" onclick="testPlaySound('set-soundError')" class="px-3 py-1.5 bg-rose-600 text-white text-xs font-medium rounded-lg shadow-sm hover:bg-rose-700"><i class="fa-solid fa-play"></i></button>
-        <button type="button" onclick="document.getElementById('set-soundError').value=''" class="px-3 py-1.5 bg-slate-200 text-slate-600 text-xs font-medium rounded-lg"><i class="fa-solid fa-trash-can"></i></button>
-      </div>
-    </div>
-  </div>
-</div>
-
             <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200 p-6">
               <h2 class="text-lg font-semibold theme-text border-b pb-3 mb-5 flex items-center"><i class="fa-brands fa-line mr-2 text-xl"></i> 2. ตั้งค่าการเชื่อมต่อ LINE Official Account</h2>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -1108,238 +1042,6 @@
     let adminSystemPassword = '123456';
     let isAdminUnlocked = sessionStorage.getItem('ADMIN_UNLOCKED_SESSION') === 'true';
 
-    // 🟢 ตัวแปรสำหรับระบบเสียง MP3  🟢 ตัวแปรสำหรับระบบเสียง MP3
-    // 🟢 ตัวแปรสำหรับระบบเสียง MP3  🟢 ตัวแปรสำหรับระบบเสียง MP3
-    // 🟢 ตัวแปรสำหรับระบบเสียง MP3  🟢 ตัวแปรสำหรับระบบเสียง MP3
-    let appSounds = { normal: '', late: '', checkout: '', error: '' };
-    let liffAudioElements = {};
-
-    function preloadLiffAudio() {
-      ['normal', 'late', 'checkout', 'error'].forEach(k => {
-        if (appSounds[k]) {
-          liffAudioElements[k] = new Audio(appSounds[k]);
-          liffAudioElements[k].load();
-        }
-      });
-    }
-
-    function playLiffAudio(type) {
-      if (liffAudioElements[type]) {
-        liffAudioElements[type].currentTime = 0;
-        let playPromise = liffAudioElements[type].play();
-        if (playPromise !== undefined) {
-          playPromise.catch(error => console.warn("ถูกบล็อกเสียง:", error));
-        }
-      }
-    }
-
-    // 🟢 ฟังก์ชันอัปโหลดและทดสอบเสียง (สำหรับหน้าแอดมิน)
-    function handleAudioUpload(fileInput, targetInputId) {
-      const file = fileInput.files[0];
-      if (!file) return;
-      if (file.size > 3 * 1024 * 1024) { 
-         Swal.fire({ icon: 'warning', title: 'ไฟล์ใหญ่เกินไป', text: 'กรุณาอัปโหลดไฟล์เสียงขนาดไม่เกิน 3 MB ครับ' });
-         return;
-      }
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        uiShowLoading('กำลังอัปโหลดไฟล์เสียง...');
-        google.script.run.withSuccessHandler(function(res) {
-          Swal.close();
-          if (res.success) {
-            document.getElementById(targetInputId).value = res.url;
-            Swal.fire({ icon: 'success', title: 'อัปโหลดเสียงสำเร็จ', timer: 1200, showConfirmButton: false });
-          } else {
-            Swal.fire({ icon: 'error', title: 'อัปโหลดล้มเหลว', text: res.message });
-          }
-        }).uploadAudioToDrive(e.target.result, file.name);
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function testPlaySound(inputId) {
-      const url = document.getElementById(inputId).value;
-      if (!url) { Swal.fire({ icon: 'warning', title: 'ไม่มีไฟล์เสียง', text: 'กรุณาอัปโหลดไฟล์ MP3 ก่อนทดสอบครับ' }); return; }
-      const audio = new Audio(url);
-      audio.play().catch(e => Swal.fire({ icon: 'error', title: 'เล่นเสียงไม่ได้', text: 'ลิงก์ไม่ถูกต้อง หรือเบราว์เซอร์บล็อกเสียง' }));
-    }
-
-    async function startWifiAutoCheckIn() {
-      // โหลด URL เสียงจากหลังบ้าน เพื่อให้ LIFF เล่นเสียงได้
-      google.script.run.withSuccessHandler(function(s) {
-          if (s) {
-             appSounds = {
-                normal: s.soundCheckInNormal || '',
-                late: s.soundCheckInLate || '',
-                checkout: s.soundCheckOut || '',
-                error: s.soundError || ''
-             };
-             preloadLiffAudio();
-          }
-      }).getAppSettings();
-
-      document.getElementById('wifiRetryBox').classList.add('hidden');
-      updateWifiVisual('scanning', 'กำลังดึงข้อมูล LINE...', 'รอสักครู่...');
-
-      let uid = await tryGetLiffUserIdFast();
-      if (uid) {
-         currentLineUid = uid;
-         localStorage.setItem('ATTENDANCE_LINE_UID', uid);
-      }
-
-      if (!currentLineUid) {
-        playLiffAudio('error');
-        updateWifiVisual('error', 'เชื่อมต่อ LINE ไม่สำเร็จ', 'กรุณาเปิดจากในแอป LINE หรือเน็ตอาจจะช้าเกินไป');
-        document.getElementById('wifiRetryBox').classList.remove('hidden');
-        return;
-      }
-
-      updateWifiVisual('scanning', 'ตรวจสอบ Wi-Fi...', 'กำลังเช็กเครือข่าย');
-      detectedPublicIp = await fetchClientPublicIp();
-      document.getElementById('clientIpText').innerText = detectedPublicIp || 'ไม่พบ IP';
-
-      if (!detectedPublicIp && SERVER_ENABLE_IP) {
-        playLiffAudio('error');
-        updateWifiVisual('error', 'ตรวจสอบเครือข่ายไม่ได้', 'กรุณาเช็กอินเทอร์เน็ตของคุณ');
-        document.getElementById('wifiRetryBox').classList.remove('hidden');
-        return;
-      }
-
-      executeIpClockInOut('');
-    }
-
-    function executeIpClockInOut(earlyReasonText, lat = null, lng = null) {
-      google.script.run.withSuccessHandler(function(res) {
-        
-        if (!res.success && res.needRegister) {
-          playLiffAudio('error'); 
-          updateWifiVisual('warning', 'ยังไม่ได้ผูกบัญชี', 'กรุณากลับไปพิมพ์เลขบัตร 13 หลักในช่องแชต LINE');
-          return;
-        }
-
-        if (!res.success && res.wrongIp) {
-           if (res.askGps) {
-              updateWifiVisual('scanning', 'กำลังค้นหาพิกัด GPS...', 'กำลังสลับไปใช้ระบบสำรอง');
-              if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                  function(pos) { executeIpClockInOut(earlyReasonText, pos.coords.latitude, pos.coords.longitude); },
-                  function(error) {
-                    playLiffAudio('error'); 
-                    updateWifiVisual('error', 'ไม่สามารถระบุตำแหน่งได้', 'กรุณาเปิด GPS และอนุญาตสิทธิ์ (Allow)');
-                    document.getElementById('wifiRetryBox').classList.remove('hidden');
-                  },
-                  { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-                );
-              } else {
-                playLiffAudio('error'); 
-                updateWifiVisual('error', 'อุปกรณ์ไม่รองรับ GPS', 'ไม่สามารถใช้งานระบบสำรองได้');
-                document.getElementById('wifiRetryBox').classList.remove('hidden');
-              }
-              return;
-           }
-           
-           playLiffAudio('error'); 
-           updateWifiVisual('error', 'ไม่สามารถลงเวลาได้', res.message);
-           document.getElementById('officeIpStatusText').innerText = res.outOfRange ? `ห่าง ${res.distance} ม.` : 'ไม่อนุญาตให้สแกน';
-           document.getElementById('officeIpStatusText').className = 'font-bold text-rose-600';
-           document.getElementById('wifiRetryBox').classList.remove('hidden');
-           return;
-        }
-
-        if (!res.success && res.requireEarlyReason) {
-         const modalHtml = '<p class="text-sm text-slate-700 mb-4">เวลางานปกติถึง <b class="text-rose-600">' + res.targetEndTime + ' น.</b><br>กรุณาเลือกเหตุผลด้านล่าง หรือพิมพ์ระบุเอง:</p>' +
-            '<div class="grid grid-cols-2 gap-2.5 mb-5">' +
-              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ทำธุรกรรมธนาคาร\'" class="py-3 px-2 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl border border-teal-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-building-columns text-xl"></i> ไปธนาคาร</button>' +
-              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ส่งเอกสาร อบจ. / กอง\'" class="py-3 px-2 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-xl border border-blue-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-folder-open text-xl"></i> ส่งเอกสาร</button>' +
-              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ส่ง LAB & เครื่องมือแพทย์\'" class="py-3 px-2 bg-purple-50 hover:bg-purple-100 text-purple-800 rounded-xl border border-purple-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-vials text-xl"></i> ส่ง LAB&เครื่องมือ</button>' +
-              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ลงพื้นที่สนับสนุนเจ้าหน้าที่\'" class="py-3 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl border border-emerald-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-map-location-dot text-xl"></i> ลงพื้นที่</button>' +
-              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'พบแพทย์/ป่วย\'" class="py-3 px-2 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-xl border border-rose-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-stethoscope text-xl"></i> พบแพทย์/ป่วย</button>' +
-              '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'มีธุระจำเป็นเร่งด่วน\'" class="py-3 px-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl border border-amber-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-person-running text-xl"></i> ธุระด่วน</button>' +
-            '</div>' +
-            '<input id="swal-early-input" class="swal2-input !w-full !mx-0 !block text-center !mt-0 !font-kanit !py-4 !rounded-xl" style="font-size: 16px !important; box-sizing: border-box;" placeholder="หรือพิมพ์เหตุผลอื่นๆ... (บังคับ)">';
-
-          Swal.fire({
-            title: '<span class="text-xl font-bold text-slate-800">ออกงานก่อนเวลา</span>',
-            html: modalHtml,
-            showCancelButton: true,
-            confirmButtonText: 'ยืนยันการบันทึก',
-            cancelButtonText: 'ยกเลิก',
-            allowOutsideClick: false,
-            customClass: {
-              popup: '!w-[92%] md:!w-[400px] !rounded-[2rem] !p-6',
-              confirmButton: '!bg-teal-600 !text-base !py-3 !px-8 !rounded-xl !font-bold shadow-lg',
-              cancelButton: '!bg-slate-100 !text-slate-600 !text-base !py-3 !px-8 !rounded-xl !font-bold'
-            },
-            preConfirm: function() {
-              const val = document.getElementById('swal-early-input').value;
-              if (!val || !val.trim()) { Swal.showValidationMessage('กรุณาระบุเหตุผลก่อนยืนยัน'); return false; }
-              return val.trim();
-            }
-          }).then(function(result) {
-            if (result.isConfirmed) executeIpClockInOut(result.value);
-            else closeScannerWindow();
-          });
-          return;
-        }
-
-        if (res.success) {
-          if (res.actionType === 'เข้างาน') {
-             if (res.status === 'สาย' || res.status === 'มาสาย') playLiffAudio('late');
-             else playLiffAudio('normal');
-          } else if (res.actionType === 'ออกงาน') {
-             playLiffAudio('checkout');
-          }
-
-          updateWifiVisual('success', 'บันทึก' + res.actionType + 'สำเร็จ!', res.empName + ' • ' + res.time + ' น.');
-          document.getElementById('officeIpStatusText').innerText = res.clientIp ? `✅ เครือข่ายตรง` : `📍 GPS (ในระยะ)`;
-          document.getElementById('officeIpStatusText').className = 'font-bold text-emerald-600';
-          
-          showSuccessCountdown(
-            `บันทึก${res.actionType}สำเร็จ!`, 
-            `คุณ <b>${res.empName}</b><br>เวลาลงบันทึก: <b class="text-teal-600 text-base">${res.time} น.</b>`
-          );
-          
-        } else {
-          playLiffAudio('error'); 
-          updateWifiVisual('error', 'ไม่สามารถบันทึกเวลาได้', res.message);
-          document.getElementById('wifiRetryBox').classList.remove('hidden');
-        }
-      }).submitIpClockInOut({
-        userId: currentLineUid,
-        idCard: currentSavedIdCard || '',
-        clientIp: detectedPublicIp,
-        earlyReason: earlyReasonText,
-        pictureUrl: localStorage.getItem('ATTENDANCE_LINE_PIC') || '',
-        lat: lat,
-        lng: lng 
-      });
-    }
-
-    function updateWifiVisual(state, title, subtitle) {
-      const box = document.getElementById('wifiScanIconBox');
-      const icon = document.getElementById('wifiScanIcon');
-      document.getElementById('wifiScanTitle').innerText = title;
-      document.getElementById('wifiScanSubtitle').innerText = subtitle;
-
-      if (state === 'scanning') {
-        box.className = "w-20 h-20 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center text-3xl mx-auto wifi-circle border-2 border-teal-200";
-        icon.className = "fa-solid fa-wifi fa-beat-fade";
-      } else if (state === 'success') {
-        box.className = "w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-4xl mx-auto border-2 border-emerald-300";
-        icon.className = "fa-solid fa-circle-check";
-      } else if (state === 'warning') {
-        box.className = "w-20 h-20 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-3xl mx-auto border-2 border-amber-300";
-        icon.className = "fa-solid fa-circle-info";
-      } else {
-        box.className = "w-20 h-20 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-3xl mx-auto border-2 border-rose-300";
-        icon.className = "fa-solid fa-triangle-exclamation";
-      }
-    }
-
-    // 🟢 ตัวแปรสำหรับระบบเสียง MP3  🟢 ตัวแปรสำหรับระบบเสียง MP3
-    // 🟢 ตัวแปรสำหรับระบบเสียง MP3  🟢 ตัวแปรสำหรับระบบเสียง MP3
-    // 🟢 ตัวแปรสำหรับระบบเสียง MP3  🟢 ตัวแปรสำหรับระบบเสียง MP3
-
     window.onload = function() {
       if (SERVER_INITIAL_UID) {
         localStorage.setItem('ATTENDANCE_LINE_UID', SERVER_INITIAL_UID);
@@ -1357,61 +1059,26 @@
         document.getElementById('wifiScannerApp').classList.remove('hidden');
         if (isLineApp) document.getElementById('adminBackBtnContainer').classList.add('hidden');
         
+        // 1. โหลดรูปล่าสุดที่จำไว้ในเครื่อง (Cache) ขึ้นมาโชว์ทันที (ใช้เวลา 0.1 วินาที)
         const cachedBg = localStorage.getItem('CACHED_SCANNER_BG');
         if (cachedBg) {
           document.getElementById('wifiScannerApp').style.backgroundImage = `url('${cachedBg}')`;
         }
 
-        // 🟢 1. โหลดข้อมูลภาพพื้นหลังและ URL เสียงล่วงหน้า
+        // 2. แอบไปเช็กข้อมูลใหม่แบบหลังบ้าน เผื่อแอดมินเปลี่ยนรูปพื้นหลัง
         google.script.run.withSuccessHandler(function(s) {
-          if (s) {
-            if (s.bannerScanner) {
-              const newBgUrl = normalizeDriveUrl(s.bannerScanner);
-              if (newBgUrl !== cachedBg) {
-                document.getElementById('wifiScannerApp').style.backgroundImage = `url('${newBgUrl}')`;
-                localStorage.setItem('CACHED_SCANNER_BG', newBgUrl);
-              }
+          if (s && s.bannerScanner) {
+            const newBgUrl = normalizeDriveUrl(s.bannerScanner);
+            // ถ้าลิงก์รูปไม่ตรงกับที่จำไว้ ให้เปลี่ยนรูปและจำค่าใหม่
+            if (newBgUrl !== cachedBg) {
+              document.getElementById('wifiScannerApp').style.backgroundImage = `url('${newBgUrl}')`;
+              localStorage.setItem('CACHED_SCANNER_BG', newBgUrl);
             }
-            // เก็บ URL เสียงลงตัวแปร
-            appSounds = {
-              normal: s.soundCheckInNormal || '',
-              late: s.soundCheckInLate || '',
-              checkout: s.soundCheckOut || '',
-              error: s.soundError || ''
-            };
-            preloadLiffAudio();
           }
         }).getAppSettings();
 
-        // 🟢 2. เปลี่ยนจากสแกนอัตโนมัติ เป็น "รอให้ผู้ใช้แตะเพื่อเริ่ม" เพื่อปลดล็อกเสียง
-        document.getElementById('wifiScanTitle').innerText = "พร้อมลงเวลา";
-        document.getElementById('wifiScanSubtitle').innerText = "แตะที่ไอคอนตรงกลางเพื่อสแกนและเปิดเสียง";
-        
-        const icon = document.getElementById('wifiScanIcon');
-        icon.className = "fa-solid fa-fingerprint fa-beat"; // เปลี่ยนเป็นรูปลายนิ้วมือ
-        
-        const box = document.getElementById('wifiScanIconBox');
-        box.className = "w-32 h-32 rounded-full bg-teal-600 text-white flex items-center justify-center text-6xl mx-auto border-4 border-white shadow-xl cursor-pointer hover:scale-105 transition";
-        
-        box.onclick = function() {
-           this.onclick = null; // ป้องกันการกดเบิ้ลซ้ำ
-           
-           // เล่นเสียงจำลองแบบเงียบๆ ทันทีที่แตะหน้าจอ เพื่อปลดล็อกข้อจำกัดของ iOS/Android
-           for (let k in liffAudioElements) {
-             if (liffAudioElements[k]) {
-                let p = liffAudioElements[k].play();
-                if(p !== undefined) {
-                   p.then(() => {
-                      liffAudioElements[k].pause();
-                      liffAudioElements[k].currentTime = 0;
-                   }).catch(e => {});
-                }
-             }
-           }
-           
-           startWifiAutoCheckIn(); // เริ่มสแกนจริง
-        };
-
+        // 3. เริ่มสแกน Wi-Fi ทันทีโดยไม่ต้องรอรูป
+        startWifiAutoCheckIn();
       } else {
         document.getElementById('adminDashboardApp').classList.remove('hidden');
         const now = new Date();
@@ -1430,7 +1097,7 @@
         });
         
         switchTab('tab-dashboard');
-        loadDashboardData(); 
+        loadDashboardData(); // โหลดข้อมูลแดชบอร์ดทันที
       }
     };
 
@@ -1816,7 +1483,7 @@
           </div>
         `,
         icon: 'success',
-        timer: 10000, // ตั้งเวลา 5 วินาที (5000 ms)
+        timer: 5000, // ตั้งเวลา 5 วินาที (5000 ms)
         timerProgressBar: true, // เปิดหลอดวิ่งด้านล่าง
         showConfirmButton: false, // ซ่อนปุ่ม OK
         allowOutsideClick: false, // ห้ามกดคลิกข้างนอกเพื่อปิด
@@ -1862,7 +1529,6 @@
       }
 
       if (!currentLineUid) {
-        playLiffAudio('error');
         updateWifiVisual('error', 'เชื่อมต่อ LINE ไม่สำเร็จ', 'กรุณาเปิดจากในแอป LINE หรือเน็ตอาจจะช้าเกินไป');
         document.getElementById('wifiRetryBox').classList.remove('hidden');
         return;
@@ -1873,7 +1539,6 @@
       document.getElementById('clientIpText').innerText = detectedPublicIp || 'ไม่พบ IP';
 
       if (!detectedPublicIp && SERVER_ENABLE_IP) {
-        playLiffAudio('error');
         updateWifiVisual('error', 'ตรวจสอบเครือข่ายไม่ได้', 'กรุณาเช็กอินเทอร์เน็ตของคุณ');
         document.getElementById('wifiRetryBox').classList.remove('hidden');
         return;
@@ -1881,13 +1546,12 @@
 
       executeIpClockInOut('');
     }
-    
+
     function executeIpClockInOut(earlyReasonText, lat = null, lng = null) {
       google.script.run.withSuccessHandler(function(res) {
         
         // 1. ตรวจสอบว่าพนักงานลงทะเบียนหรือยัง
         if (!res.success && res.needRegister) {
-          playLiffAudio('error'); // 🟢 เสียงแจ้งเตือนขัดข้อง
           updateWifiVisual('warning', 'ยังไม่ได้ผูกบัญชี', 'กรุณากลับไปพิมพ์เลขบัตร 13 หลักในช่องแชต LINE');
           return;
         }
@@ -1899,17 +1563,16 @@
               if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                   function(pos) {
+                    // ได้ GPS มาแล้ว ให้เรียกตัวเองซ้ำพร้อมส่งพิกัดไปหลังบ้าน
                     executeIpClockInOut(earlyReasonText, pos.coords.latitude, pos.coords.longitude);
                   },
                   function(error) {
-                    playLiffAudio('error'); // 🟢 เสียงแจ้งเตือนขัดข้อง
                     updateWifiVisual('error', 'ไม่สามารถระบุตำแหน่งได้', 'กรุณาเปิด GPS และอนุญาตสิทธิ์ (Allow)');
                     document.getElementById('wifiRetryBox').classList.remove('hidden');
                   },
                   { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
                 );
               } else {
-                playLiffAudio('error'); // 🟢 เสียงแจ้งเตือนขัดข้อง
                 updateWifiVisual('error', 'อุปกรณ์ไม่รองรับ GPS', 'ไม่สามารถใช้งานระบบสำรองได้');
                 document.getElementById('wifiRetryBox').classList.remove('hidden');
               }
@@ -1917,7 +1580,6 @@
            }
            
            // หากคำนวณ GPS แล้วเกินระยะ หรือ ไม่ได้ตั้งค่า GPS ไว้
-           playLiffAudio('error'); // 🟢 เสียงแจ้งเตือนขัดข้อง
            updateWifiVisual('error', 'ไม่สามารถลงเวลาได้', res.message);
            document.getElementById('officeIpStatusText').innerText = res.outOfRange ? `ห่าง ${res.distance} ม.` : 'ไม่อนุญาตให้สแกน';
            document.getElementById('officeIpStatusText').className = 'font-bold text-rose-600';
@@ -1925,17 +1587,24 @@
            return;
         }
 
-        // 3. แจ้งเตือนออกงานก่อนเวลา (กรณีนี้ให้แสดง UI โดยไม่ต้องเปิดเสียง error เพื่อไม่ให้ตกใจ)
+        // 3. แจ้งเตือนออกงานก่อนเวลา (ปรับดีไซน์ใหม่)
         if (!res.success && res.requireEarlyReason) {
          const modalHtml = '<p class="text-sm text-slate-700 mb-4">เวลางานปกติถึง <b class="text-rose-600">' + res.targetEndTime + ' น.</b><br>กรุณาเลือกเหตุผลด้านล่าง หรือพิมพ์ระบุเอง:</p>' +
             '<div class="grid grid-cols-2 gap-2.5 mb-5">' +
+              // 1. ธนาคาร (สี Teal)
               '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ทำธุรกรรมธนาคาร\'" class="py-3 px-2 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl border border-teal-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-building-columns text-xl"></i> ไปธนาคาร</button>' +
+              // 2. ส่งเอกสาร (สี Blue)
               '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ส่งเอกสาร อบจ. / กอง\'" class="py-3 px-2 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-xl border border-blue-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-folder-open text-xl"></i> ส่งเอกสาร</button>' +
+              // 3. ส่ง LAB / เครื่องมือ (สี Purple)
               '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ส่ง LAB & เครื่องมือแพทย์\'" class="py-3 px-2 bg-purple-50 hover:bg-purple-100 text-purple-800 rounded-xl border border-purple-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-vials text-xl"></i> ส่ง LAB&เครื่องมือ</button>' +
+              // 4. ลงพื้นที่ (สี Emerald)
               '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'ลงพื้นที่สนับสนุนเจ้าหน้าที่\'" class="py-3 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl border border-emerald-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-map-location-dot text-xl"></i> ลงพื้นที่</button>' +
+              // 5. พบแพทย์/ป่วย (สี Rose)
               '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'พบแพทย์/ป่วย\'" class="py-3 px-2 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-xl border border-rose-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-stethoscope text-xl"></i> พบแพทย์/ป่วย</button>' +
+              // 6. ธุระด่วน (สี Amber)
               '<button type="button" onclick="document.getElementById(\'swal-early-input\').value=\'มีธุระจำเป็นเร่งด่วน\'" class="py-3 px-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl border border-amber-200 font-semibold text-xs md:text-sm transition active:scale-95 shadow-sm flex flex-col items-center justify-center gap-1.5"><i class="fa-solid fa-person-running text-xl"></i> ธุระด่วน</button>' +
             '</div>' +
+            // แก้ไขช่อง Input ให้กึ่งกลางและเต็มช่อง
             '<input id="swal-early-input" class="swal2-input !w-full !mx-0 !block text-center !mt-0 !font-kanit !py-4 !rounded-xl" style="font-size: 16px !important; box-sizing: border-box;" placeholder="หรือพิมพ์เหตุผลอื่นๆ... (บังคับ)">';
 
           Swal.fire({
@@ -1964,14 +1633,6 @@
 
         // 4. บันทึกข้อมูลสำเร็จ (โชว์สถานะเครือข่าย หรือ GPS)
         if (res.success) {
-          // 🟢 เงื่อนไขการเล่นเสียงเมื่อสำเร็จ
-          if (res.actionType === 'เข้างาน') {
-             if (res.status === 'สาย' || res.status === 'มาสาย') playLiffAudio('late');
-             else playLiffAudio('normal');
-          } else if (res.actionType === 'ออกงาน') {
-             playLiffAudio('checkout');
-          }
-
           updateWifiVisual('success', 'บันทึก' + res.actionType + 'สำเร็จ!', res.empName + ' • ' + res.time + ' น.');
           document.getElementById('officeIpStatusText').innerText = res.clientIp ? `✅ เครือข่ายตรง` : `📍 GPS (ในระยะ)`;
           document.getElementById('officeIpStatusText').className = 'font-bold text-emerald-600';
@@ -1983,7 +1644,6 @@
           );
           
         } else {
-          playLiffAudio('error'); // 🟢 เสียงแจ้งเตือนขัดข้อง
           updateWifiVisual('error', 'ไม่สามารถบันทึกเวลาได้', res.message);
           document.getElementById('wifiRetryBox').classList.remove('hidden');
         }
@@ -1993,12 +1653,10 @@
         clientIp: detectedPublicIp,
         earlyReason: earlyReasonText,
         pictureUrl: localStorage.getItem('ATTENDANCE_LINE_PIC') || '',
-        lat: lat,
-        lng: lng 
+        lat: lat, // ส่งพิกัด Latitude ให้หลังบ้าน
+        lng: lng  // ส่งพิกัด Longitude ให้หลังบ้าน
       });
     }
-
-    
     function updateWifiVisual(state, title, subtitle) {
       const box = document.getElementById('wifiScanIconBox');
       const icon = document.getElementById('wifiScanIcon');
@@ -2269,7 +1927,6 @@
       document.getElementById('set-adminPassword').value = adminSystemPassword;
       document.getElementById('set-blockWeekend').checked = (String(s.blockWeekend) !== 'false');
       document.getElementById('set-enableIpCheck').checked = (String(s.enableIpCheck) !== 'false');
-      
       const fields = [ 'appTitle', 'appSubtitle', 'appLogo', 'bgWatermark', 'bgOpacity', 'lineToken', 'botBasicId', 'botQrUrl', 'officeIps', 'bannerPR', 'bannerCheckIn', 'bannerCheckOut', 'bannerLeave', 'bannerSummary', 'bannerHoliday', 'executiveUids', 'bannerExecutive', 'bannerScanner', 'officeLat', 'officeLng', 'officeRadius', 'executiveToken', 'bannerLeaveNotify' ];
       fields.forEach(function(k) {
         const el = document.getElementById('set-' + k);
@@ -2277,7 +1934,6 @@
         const prev = document.getElementById('prev-' + k);
         if (prev && s[k]) prev.src = normalizeDriveUrl(s[k]);
       });
-      
       if (s.botBasicId) document.getElementById('displayBotId').innerText = s.botBasicId;
       if (s.botQrUrl) document.getElementById('displayBotQr').src = normalizeDriveUrl(s.botQrUrl);
       selectTheme(s.themeColor || 'teal');
@@ -2285,19 +1941,6 @@
       if (s.bannerScanner) {
         document.getElementById('wifiScannerApp').style.backgroundImage = `url('${normalizeDriveUrl(s.bannerScanner)}')`;
       }
-      
-      // 🟢 ดึงข้อมูลเสียงแจ้งเตือน
-      appSounds = {
-        normal: s.soundCheckInNormal || '',
-        late: s.soundCheckInLate || '',
-        checkout: s.soundCheckOut || '',
-        error: s.soundError || ''
-      };
-      const soundFields = ['soundCheckInNormal', 'soundCheckInLate', 'soundCheckOut', 'soundError'];
-      soundFields.forEach(function(k) {
-        const el = document.getElementById('set-' + k);
-        if (el && s[k] !== undefined) el.value = s[k];
-      });
     }
 
     function handleFileUpload(fileInput, targetInputId, previewImgId, isWatermark) {
@@ -2343,18 +1986,21 @@
         bannerHoliday: document.getElementById('set-bannerHoliday').value.trim(),
         executiveUids: document.getElementById('set-executiveUids').value.trim(),
         bannerExecutive: document.getElementById('set-bannerExecutive').value.trim(),
+        executiveUids: document.getElementById('set-executiveUids').value.trim(),
+        bannerExecutive: document.getElementById('set-bannerExecutive').value.trim(),
         bannerScanner: document.getElementById('set-bannerScanner').value.trim(),
         officeLat: document.getElementById('set-officeLat').value.trim(),
         officeLng: document.getElementById('set-officeLng').value.trim(),
         officeRadius: document.getElementById('set-officeRadius').value.trim(),
+        executiveUids: document.getElementById('set-executiveUids').value.trim(),
+        bannerExecutive: document.getElementById('set-bannerExecutive').value.trim(),
+        bannerScanner: document.getElementById('set-bannerScanner').value.trim(),
         executiveToken: document.getElementById('set-executiveToken').value.trim(),
-        bannerLeaveNotify: document.getElementById('set-bannerLeaveNotify').value.trim(),
-        // 🟢 เพิ่มข้อมูลเสียงแจ้งเตือนสำหรับบันทึกลงระบบ
-        soundCheckInNormal: document.getElementById('set-soundCheckInNormal').value.trim(),
-        soundCheckInLate: document.getElementById('set-soundCheckInLate').value.trim(),
-        soundCheckOut: document.getElementById('set-soundCheckOut').value.trim(),
-        soundError: document.getElementById('set-soundError').value.trim()
+        executiveToken: document.getElementById('set-executiveToken').value.trim(),
+        bannerLeaveNotify: document.getElementById('set-bannerLeaveNotify').value.trim()
       };
+      
+      
 
       uiShowLoading('กำลังบันทึก...');
       google.script.run.withSuccessHandler(function(res) {
