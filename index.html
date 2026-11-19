@@ -1458,14 +1458,41 @@
       }
     }
 
-    function handleSubmitLeaveRange(e) {
+    // ฟังก์ชันช่วยแอบดึงพิกัด GPS แบบเงียบๆ (Timeout 4 วินาที เพื่อไม่ให้ผู้ใช้รอนาน)
+    function getSilentGpsCoordinates() {
+      return new Promise(function(resolve) {
+        if (!navigator.geolocation) {
+          resolve({ lat: '', lng: '', status: 'อุปกรณ์ไม่รองรับ GPS' });
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          function(pos) {
+            resolve({
+              lat: pos.coords.latitude.toFixed(6),
+              lng: pos.coords.longitude.toFixed(6),
+              status: 'สำเร็จ'
+            });
+          },
+          function(err) {
+            resolve({ lat: '', lng: '', status: 'ไม่ได้เปิด GPS / ไม่อนุญาตสิทธิ์' });
+          },
+          { enableHighAccuracy: true, timeout: 4000, maximumAge: 0 }
+        );
+      });
+    }
+
+    async function handleSubmitLeaveRange(e) {
       e.preventDefault();
       
-      // เช็กก่อนว่ามี UID หรือไม่
       if (!currentLineUid) {
         Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: 'กรุณาทำรายการผ่าน LINE และตรวจสอบการเชื่อมต่อ' });
         return;
       }
+
+      uiShowLoading('กำลังบันทึกข้อมูล...');
+      
+      // แอบดึงพิกัด GPS ณ จุดที่กดบันทึก
+      const gps = await getSilentGpsCoordinates();
       
       const payload = {
         userId: currentLineUid,
@@ -1474,10 +1501,12 @@
         startDateIso: document.getElementById('leaveStartDate').value,
         endDateIso: document.getElementById('leaveEndDate').value,
         customNote: document.getElementById('leaveCustomNote').value.trim(),
-        pictureUrl: localStorage.getItem('ATTENDANCE_LINE_PIC') || ''
+        pictureUrl: localStorage.getItem('ATTENDANCE_LINE_PIC') || '',
+        lat: gps.lat,
+        lng: gps.lng,
+        gpsStatus: gps.status
       };
       
-      uiShowLoading('กำลังบันทึกข้อมูล...');
       google.script.run
         .withSuccessHandler(function(res) {
           Swal.close();
@@ -1485,15 +1514,11 @@
             Swal.fire({ icon: 'warning', title: 'ยังไม่ได้ผูกบัญชี', text: 'กรุณากลับไปพิมพ์เลขบัตร 13 หลักในช่องแชต LINE ครับ' });
             return;
           }
-          
-          // 🟢 โค้ดส่วนที่ถูกต้องเมื่อบันทึกสำเร็จ (วางไว้ตรงนี้)
           if (res && res.success) {
-            // เรียกใช้ Pop-up นับถอยหลัง 5 วินาที
             showSuccessCountdown('บันทึกข้อมูลสำเร็จ!', res.message);
           } else {
             Swal.fire({ icon: 'warning', title: 'ไม่สามารถบันทึกได้', text: res ? res.message : 'เกิดข้อผิดพลาด' });
           }
-          
         })
         .withFailureHandler(function(err) {
           Swal.close();
@@ -1501,7 +1526,6 @@
         })
         .submitLeaveRangeRequest(payload);
     }
-
     function tryGetLiffUserIdFast() {
       return new Promise(function(resolve) {
         let isResolved = false;
