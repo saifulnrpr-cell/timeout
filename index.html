@@ -2962,20 +2962,14 @@
       }
 
       uiShowLoading('กำลังบันทึกข้อมูล...');
-      google.script.run
-        .withSuccessHandler(function(res) {
-          Swal.close();
-          if (res && res.success) {
-            showSuccessCountdown('บันทึกเรียบร้อย!', res.message);
-          } else {
-            Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: res ? res.message : 'เกิดข้อผิดพลาด' });
-          }
-        })
-        .withFailureHandler(function(err) {
-          Swal.close();
-          Swal.fire({ icon: 'error', title: 'การเชื่อมต่อล้มเหลว', text: err.message });
-        })
-        .processLeaveApproval(reqId, 'REJECTED', reason, '');
+        google.script.run.withSuccessHandler(function(res) {
+        Swal.close();
+        if (res && res.success) {
+          showSuccessCountdown('บันทึกเรียบร้อย!', res.message);
+        } else {
+          Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: res ? res.message : 'เกิดข้อผิดพลาด' });
+        }
+      }).processLeaveApproval(reqId, 'REJECTED', reason, currentLineUid || '');
     }
 
     // โหลดรายการคำขออนุมัติบนหน้าเว็บ Admin
