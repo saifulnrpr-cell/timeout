@@ -190,15 +190,7 @@
     </div>
   </div>
 
-  <!-- โหมด 1.5: หน้าฟอร์มแจ้งลางาน / ไปราชการล่วงหน้า -->
-  <div id="leaveFormApp" class="hidden flex-1 flex flex-col justify-center items-center p-4 relative z-10 max-w-md mx-auto w-full">
-    <div class="w-full bg-white rounded-3xl shadow-xl border border-slate-100 p-6 space-y-4">
-      <div class="flex items-center space-x-3 border-b pb-3">
-        <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-calendar-check"></i></div>
-        <div><h2 class="text-lg font-bold text-slate-800">แจ้งลางาน / ไปราชการ</h2><p id="leaveEmpNameLabel" class="text-xs text-teal-700 font-medium">กำลังตรวจสอบข้อมูลพนักงาน...</p></div>
-      </div>
-
-      <!-- โหมด 1.8: หน้าต่างกรอกเหตุผลไม่อนุมัติ (เปิดจากปุ่มใน LINE ผู้บริหาร) -->
+  <!-- โหมด 1.8: หน้าต่างกรอกเหตุผลไม่อนุมัติ (เปิดจากปุ่มใน LINE ผู้บริหาร) -->
   <div id="execRejectApp" class="hidden flex-1 flex flex-col justify-center items-center p-4 relative z-10 max-w-md mx-auto w-full">
     <div class="w-full bg-white rounded-3xl shadow-xl border border-rose-100 p-6 space-y-4">
       <div class="flex items-center space-x-3 border-b pb-3">
@@ -221,6 +213,14 @@
       </form>
     </div>
   </div>
+
+  <!-- โหมด 1.5: หน้าฟอร์มแจ้งลางาน / ไปราชการล่วงหน้า -->
+  <div id="leaveFormApp" class="hidden flex-1 flex flex-col justify-center items-center p-4 relative z-10 max-w-md mx-auto w-full">
+    <div class="w-full bg-white rounded-3xl shadow-xl border border-slate-100 p-6 space-y-4">
+      <div class="flex items-center space-x-3 border-b pb-3">
+        <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-calendar-check"></i></div>
+        <div><h2 class="text-lg font-bold text-slate-800">แจ้งลางาน / ไปราชการ</h2><p id="leaveEmpNameLabel" class="text-xs text-teal-700 font-medium">กำลังตรวจสอบข้อมูลพนักงาน...</p></div>
+      </div>      
       
       <div id="leaveErrorBox" class="hidden bg-rose-50 border border-rose-200 rounded-xl p-3 text-center mb-3">
         <p class="text-xs text-rose-700 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> กรุณาเปิดแบบฟอร์มนี้ผ่านแอป LINE เท่านั้น</p>
@@ -454,9 +454,11 @@
             <div class="relative w-full h-64 md:h-72">
               <canvas id="individualChart"></canvas>
             </div>
-          </div>
+          </div>    
 
-          <!-- แท็บ: อนุมัติไปราชการ / อบรม -->
+        </div>
+
+        <!-- แท็บ: อนุมัติไปราชการ / อบรม -->
         <div id="tab-approvals" class="tab-pane space-y-6 hidden w-full">
           <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200 p-6">
             <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -487,7 +489,6 @@
           </div>
         </div>
 
-        </div>
         <!-- แท็บ: พิมพ์รายงาน -->
         <div id="tab-report" class="tab-pane space-y-6 hidden w-full">
           <!-- ...เนื้อหา tab-report เดิม... -->
@@ -1157,6 +1158,7 @@
         updateAdminLockVisual();
         loadSystemSettings();
         loadEmployees();
+        loadApprovalRequests();
         loadHolidays();
         loadShiftMasterSettings();
         loadReminderStatus();
@@ -1792,7 +1794,7 @@
     }
 
     function switchTab(tabId) {
-      const protectedTabs = ['tab-employees', 'tab-botqr', 'tab-settings', 'tab-shift'];
+      const protectedTabs = ['tab-employees', 'tab-botqr', 'tab-settings', 'tab-shift', 'tab-approvals'];
       if (protectedTabs.includes(tabId) && !isAdminUnlocked) {
         Swal.fire({
           title: '<div class="flex flex-col items-center"><div class="w-16 h-16 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center text-3xl mb-3"><i class="fa-solid fa-lock"></i></div>ยืนยันสิทธิ์ผู้ดูแลระบบ</div>',
@@ -1813,12 +1815,14 @@
             updateAdminLockVisual();
             activateTabUI(tabId);
             if (tabId === 'tab-shift') loadShiftGrid();
+            if (tabId === 'tab-approvals') loadApprovalRequests();
           }
         });
         return;
       }
       activateTabUI(tabId);
       if (tabId === 'tab-shift') loadShiftGrid();
+      if (tabId === 'tab-approvals') loadApprovalRequests();
     }
 
     function activateTabUI(tabId) {
@@ -1826,7 +1830,7 @@
         el.style.display = 'none';
       });
 
-      ['tab-report', 'tab-employees', 'tab-botqr', 'tab-settings', 'tab-shift'].forEach(function(id) {
+      ['tab-dashboard', 'tab-approvals', 'tab-report', 'tab-employees', 'tab-botqr', 'tab-settings', 'tab-shift'].forEach(function(id) {
         const btn = document.getElementById('btn-' + id);
         if (btn) {
           btn.className = "flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap lg:whitespace-normal text-slate-600 hover:bg-slate-50 hover:text-teal-600";
