@@ -2282,8 +2282,8 @@
         let rowsHtml = '';
         res.records.forEach(function(rec, idx) {
           let statusColor = 'text-emerald-700 font-medium';
-          if (rec.status === 'สาย' || rec.status === 'มาสาย') statusColor = 'text-rose-600 font-medium';
-          if (rec.status === 'ลางาน') statusColor = 'text-amber-600 font-medium';
+          if (rec.status === 'สาย' || rec.status === 'มาสาย' || rec.status === 'ขาดงาน' || rec.status === 'ไม่อนุมัติ') statusColor = 'text-rose-600 font-bold';
+          if (rec.status === 'ลางาน' || rec.status === 'รออนุมัติ') statusColor = 'text-amber-600 font-medium';
 
           rowsHtml += '<tr><td class="py-2 px-2 border-r text-center">' + (idx + 1) + '</td><td class="py-2 px-3 border-r text-center">' + rec.date + '</td><td class="py-2 px-3 border-r text-center">' + (rec.timeIn || '-') + '</td><td class="py-2 px-3 border-r text-center">' + (rec.timeOut || '-') + '</td><td class="py-2 px-2 border-r text-center font-mono">' + rec.workHours + '</td><td class="py-2 px-2 border-r text-center font-mono text-xs">' + (rec.ipAddress || '-') + '</td><td class="py-2 px-3 border-r text-center ' + statusColor + '">' + (rec.status || '-') + '</td><td class="py-2 px-3">' + (rec.note || '') + '</td></tr>';
         });
