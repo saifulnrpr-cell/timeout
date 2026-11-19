@@ -197,6 +197,30 @@
         <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-calendar-check"></i></div>
         <div><h2 class="text-lg font-bold text-slate-800">แจ้งลางาน / ไปราชการ</h2><p id="leaveEmpNameLabel" class="text-xs text-teal-700 font-medium">กำลังตรวจสอบข้อมูลพนักงาน...</p></div>
       </div>
+
+      <!-- โหมด 1.8: หน้าต่างกรอกเหตุผลไม่อนุมัติ (เปิดจากปุ่มใน LINE ผู้บริหาร) -->
+  <div id="execRejectApp" class="hidden flex-1 flex flex-col justify-center items-center p-4 relative z-10 max-w-md mx-auto w-full">
+    <div class="w-full bg-white rounded-3xl shadow-xl border border-rose-100 p-6 space-y-4">
+      <div class="flex items-center space-x-3 border-b pb-3">
+        <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl shrink-0"><i class="fa-solid fa-circle-xmark"></i></div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">ระบุเหตุผลที่ไม่อนุมัติ</h2>
+          <p class="text-xs text-slate-500">ระบบจะบันทึกหมายเหตุและแจ้งกลับพนักงานทันที</p>
+        </div>
+      </div>
+      <form onsubmit="handleSubmitExecReject(event)" class="space-y-4">
+        <input type="hidden" id="execRejectReqId">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">เหตุผลการไม่อนุมัติ <span class="text-rose-500">*</span></label>
+          <textarea id="execRejectReasonInput" rows="3" required placeholder="เช่น ติดภารกิจเร่งด่วนในหน่วยงาน, เอกสารไม่ครบถ้วน..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm bg-white focus:outline-none focus:border-rose-500"></textarea>
+        </div>
+        <div class="space-y-2 pt-1">
+          <button type="submit" class="w-full py-3 rounded-2xl font-semibold text-sm bg-rose-600 hover:bg-rose-700 text-white shadow-lg transition flex items-center justify-center"><i class="fa-solid fa-paper-plane mr-2"></i> ยืนยันการไม่อนุมัติ</button>
+          <button type="button" onclick="closeScannerWindow()" class="w-full py-2 rounded-2xl font-medium text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 transition">ยกเลิก / ปิดหน้าต่าง</button>
+        </div>
+      </form>
+    </div>
+  </div>
       
       <div id="leaveErrorBox" class="hidden bg-rose-50 border border-rose-200 rounded-xl p-3 text-center mb-3">
         <p class="text-xs text-rose-700 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> กรุณาเปิดแบบฟอร์มนี้ผ่านแอป LINE เท่านั้น</p>
@@ -247,6 +271,10 @@
 
         <button onclick="switchTab('tab-dashboard')" id="btn-tab-dashboard" class="flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap lg:whitespace-normal bg-teal-50 text-teal-700 shadow-sm border border-teal-100">
           <i class="fa-solid fa-chart-pie w-6 text-center"></i> <span class="ml-1">ภาพรวม (Dashboard)</span>
+        </button>
+
+        <button onclick="switchTab('tab-approvals')" id="btn-tab-approvals" class="flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap lg:whitespace-normal text-slate-600 hover:bg-slate-50 hover:text-teal-600">
+          <i class="fa-solid fa-file-signature w-6 text-center"></i> <span class="ml-1">อนุมัติไปราชการ/อบรม</span> <span id="pendingApprovalBadge" class="hidden ml-auto bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0</span>
         </button>
         
         <button onclick="switchTab('tab-report')" id="btn-tab-report" class="flex items-center px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap lg:whitespace-normal text-slate-600 hover:bg-slate-50 hover:text-teal-600">
@@ -427,6 +455,37 @@
               <canvas id="individualChart"></canvas>
             </div>
           </div>
+
+          <!-- แท็บ: อนุมัติไปราชการ / อบรม -->
+        <div id="tab-approvals" class="tab-pane space-y-6 hidden w-full">
+          <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-sm border border-slate-200 p-6">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+              <div>
+                <h2 class="text-lg font-semibold theme-text flex items-center"><i class="fa-solid fa-file-signature mr-2"></i> รายการขออนุมัติไปราชการ / อบรม</h2>
+                <p class="text-xs text-slate-500 mt-0.5">เมื่ออนุมัติ ระบบจะลงเวลาทำงานปกติและแจ้งเตือน LINE พนักงานอัตโนมัติ</p>
+              </div>
+              <button onclick="loadApprovalRequests()" class="text-sm theme-text hover:underline flex items-center"><i class="fa-solid fa-rotate-right mr-1"></i> รีเฟรช</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-100 text-slate-700 border-b">
+                    <th class="py-3 px-4">วันที่ส่งคำขอ</th>
+                    <th class="py-3 px-4">ชื่อ-นามสกุล</th>
+                    <th class="py-3 px-4">ประเภท</th>
+                    <th class="py-3 px-4">ช่วงวันที่</th>
+                    <th class="py-3 px-4">รายละเอียด</th>
+                    <th class="py-3 px-4 text-center">สถานะ</th>
+                    <th class="py-3 px-4 text-center">การดำเนินการ</th>
+                  </tr>
+                </thead>
+                <tbody id="approvalTableBody" class="divide-y divide-slate-200">
+                  <tr><td colspan="7" class="text-center py-6 text-slate-400">กำลังโหลดข้อมูล...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
         </div>
         <!-- แท็บ: พิมพ์รายงาน -->
@@ -1049,6 +1108,15 @@
 
       const isLineApp = /Line/i.test(navigator.userAgent);
       const searchDecoded = decodeURIComponent(window.location.search || '');
+
+      if (SERVER_INITIAL_MODE === 'approve' || searchDecoded.includes('mode=approve')) {
+        document.getElementById('adminDashboardApp').classList.add('hidden');
+        document.getElementById('wifiScannerApp').classList.add('hidden');
+        document.getElementById('leaveFormApp').classList.add('hidden');
+        document.getElementById('execRejectApp').classList.remove('hidden');
+        document.getElementById('execRejectReqId').value = urlParams.get('reqId') || '';
+        return;
+      }
 
       if (SERVER_INITIAL_MODE === 'leave' || searchDecoded.includes('mode=leave')) {
         if (isLineApp) document.getElementById('leaveAdminBackBtn').classList.add('hidden');
@@ -2840,6 +2908,123 @@
           function() { Swal.close(); Swal.fire({ icon: 'error', title: 'ไม่สามารถดึงพิกัดได้', text: 'กรุณาเปิด GPS และอนุญาตสิทธิ์บนเบราว์เซอร์' }); },
           { enableHighAccuracy: true }
         );
+      }
+    }
+
+    // ส่งผลการไม่อนุมัติจากหน้าต่าง LIFF ผู้บริหาร
+    function handleSubmitExecReject(e) {
+      e.preventDefault();
+      const reqId = document.getElementById('execRejectReqId').value;
+      const reason = document.getElementById('execRejectReasonInput').value.trim();
+      if (!reqId || !reason) return;
+
+      uiShowLoading('กำลังบันทึกข้อมูล...');
+      google.script.run.withSuccessHandler(function(res) {
+        Swal.close();
+        if (res && res.success) {
+          showSuccessCountdown('บันทึกเรียบร้อย!', res.message);
+        } else {
+          Swal.fire({ icon: 'warning', title: 'แจ้งเตือน', text: res ? res.message : 'เกิดข้อผิดพลาด' });
+        }
+      }).processLeaveApproval(reqId, 'REJECTED', reason, '');
+    }
+
+    // โหลดรายการคำขออนุมัติบนหน้าเว็บ Admin
+    function loadApprovalRequests() {
+      google.script.run.withSuccessHandler(function(list) {
+        const tbody = document.getElementById('approvalTableBody');
+        const badge = document.getElementById('pendingApprovalBadge');
+        if (!tbody) return;
+
+        let pendingCount = 0;
+        if (!list || list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-slate-400">ยังไม่มีรายการขออนุมัติไปราชการ/อบรม</td></tr>';
+          if (badge) badge.classList.add('hidden');
+          return;
+        }
+
+        let html = '';
+        list.forEach(item => {
+          if (item.status === 'รออนุมัติ') pendingCount++;
+
+          let statusBadge = '<span class="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">รออนุมัติ</span>';
+          if (item.status === 'อนุมัติ') statusBadge = '<span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">อนุมัติแล้ว</span>';
+          if (item.status === 'ไม่อนุมัติ') statusBadge = `<span class="px-2.5 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-bold" title="${item.approverNote}">ไม่อนุมัติ</span>`;
+
+          let actionBtns = '<span class="text-xs text-slate-400">-</span>';
+          if (item.status === 'รออนุมัติ') {
+            actionBtns = `
+              <div class="flex justify-center gap-1.5">
+                <button onclick="handleWebApproval('${item.reqId}', 'APPROVED', '${item.empName}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm transition"><i class="fa-solid fa-check mr-1"></i>อนุมัติ</button>
+                <button onclick="handleWebApproval('${item.reqId}', 'REJECTED', '${item.empName}')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold shadow-sm transition"><i class="fa-solid fa-xmark mr-1"></i>ไม่อนุมัติ</button>
+              </div>`;
+          } else if (item.status === 'ไม่อนุมัติ' && item.approverNote) {
+            actionBtns = `<span class="text-xs text-rose-600">เหตุผล: ${item.approverNote}</span>`;
+          }
+
+          html += `
+            <tr class="hover:bg-slate-50">
+              <td class="py-3 px-4 text-xs text-slate-500 font-mono">${item.timestamp}</td>
+              <td class="py-3 px-4 font-medium text-slate-800">${item.empName}<div class="text-[10px] text-slate-400">${item.position}</div></td>
+              <td class="py-3 px-4 text-xs font-semibold text-teal-700">${item.category}</td>
+              <td class="py-3 px-4 text-xs font-mono">${item.rangeLabel}</td>
+              <td class="py-3 px-4 text-xs text-slate-600">${item.empNote || '-'}</td>
+              <td class="py-3 px-4 text-center">${statusBadge}</td>
+              <td class="py-3 px-4 text-center">${actionBtns}</td>
+            </tr>`;
+        });
+
+        tbody.innerHTML = html;
+        if (badge) {
+          if (pendingCount > 0) {
+            badge.innerText = pendingCount;
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        }
+      }).getPendingLeaveRequests();
+    }
+
+    // กดอนุมัติ / ไม่อนุมัติ จากหน้าเว็บ Admin
+    function handleWebApproval(reqId, decision, empName) {
+      if (decision === 'APPROVED') {
+        Swal.fire({
+          title: 'ยืนยันการอนุมัติ?',
+          text: `อนุมัติคำขอไปราชการ/อบรมของ ${empName} และลงเวลาปฏิบัติงานปกติใช่หรือไม่?`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'อนุมัติ',
+          cancelButtonText: 'ยกเลิก'
+        }).then(res => {
+          if (res.isConfirmed) {
+            uiShowLoading('กำลังบันทึกการอนุมัติ...');
+            google.script.run.withSuccessHandler(r => {
+              Swal.close();
+              loadApprovalRequests();
+              Swal.fire({ icon: r.success ? 'success' : 'error', title: r.success ? 'สำเร็จ' : 'ผิดพลาด', text: r.message });
+            }).processLeaveApproval(reqId, 'APPROVED', '', '');
+          }
+        });
+      } else {
+        Swal.fire({
+          title: `ไม่อนุมัติคำขอของ ${empName}`,
+          input: 'text',
+          inputPlaceholder: 'กรุณาระบุเหตุผลที่ไม่อนุมัติ...',
+          showCancelButton: true,
+          confirmButtonText: 'ยืนยันไม่อนุมัติ',
+          cancelButtonText: 'ยกเลิก',
+          inputValidator: val => (!val || !val.trim()) ? 'กรุณาระบุเหตุผลก่อนยืนยัน' : null
+        }).then(res => {
+          if (res.isConfirmed) {
+            uiShowLoading('กำลังบันทึกข้อมูล...');
+            google.script.run.withSuccessHandler(r => {
+              Swal.close();
+              loadApprovalRequests();
+              Swal.fire({ icon: r.success ? 'success' : 'error', title: r.success ? 'สำเร็จ' : 'ผิดพลาด', text: r.message });
+            }).processLeaveApproval(reqId, 'REJECTED', res.value.trim(), '');
+          }
+        });
       }
     }
 
